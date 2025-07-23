@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:campus_life_hub/config/routes/app_router.dart';
 
+import 'config/theme/app_theme.dart';
+
+
 void main() {
   runApp(const MyApp());
 }
@@ -12,9 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Campus Life Hub',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: AppTheme.lightTheme,
       routerDelegate: appRouter.routerDelegate,
       routeInformationParser: appRouter.routeInformationParser,
       routeInformationProvider: appRouter.routeInformationProvider,
