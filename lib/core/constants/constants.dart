@@ -1,0 +1,1 @@
+const String authenAPIBaseUrl = 'https://api.service.com/v1';
