@@ -4,25 +4,18 @@ import '../../../../config/theme/app_theme.dart';
 import '../../../../core/constants/dimens.dart';
 import '../../../../core/widgets/custom_bottom_navigation_bar.dart';
 
-class AnnouncementPage extends StatelessWidget {
-  final bool showBackButton;
-  final bool showBottomNav;
-  
-  const AnnouncementPage({
-    super.key,
-    this.showBackButton = false,
-    this.showBottomNav = false,
-  });
+class AnnouncementStandalonePage extends StatelessWidget {
+  const AnnouncementStandalonePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
-        leading: showBackButton ? IconButton(
+        leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textWhite),
           onPressed: () => context.go('/'),
-        ) : null,
+        ),
         title: const Text(
           'Announcements',
           style: TextStyle(
@@ -31,15 +24,14 @@ class AnnouncementPage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        automaticallyImplyLeading: showBackButton,
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppDimens.paddingMedium),
-          child: Center(
+          child: const Center(
             child: Text(
               'Announcement details go here.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: AppDimens.fontLarge,
                 color: AppColors.textPrimary,
               ),
@@ -47,22 +39,22 @@ class AnnouncementPage extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: showBottomNav ? CustomBottomNavigationBar(
-        currentIndex: -1, // No tab highlighted when standalone
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: -1, // No tab highlighted
         onTap: (index) {
           switch (index) {
             case 0:
               context.go('/');
               break;
             case 1:
-              context.go('/'); // Go back to main screen
+              context.go('/'); // Go to main screen and switch to notifications
               break;
             case 2:
               // Navigate to profile when implemented
               break;
           }
         },
-      ) : null,
+      ),
     );
   }
 }
