@@ -1,0 +1,15 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/core.dart';
+import '../entities/profile_entity.dart';
+import '../repositories/auth_repository.dart';
+
+class GetCurrentUser implements UseCase<ProfileEntity, NoParams> {
+  final AuthRepository repository;
+
+  GetCurrentUser(this.repository);
+
+  @override
+  Future<Either<Failure, ProfileEntity>> call(NoParams params) async {
+    return await repository.getCurrentUser();
+  }
+}

@@ -1,0 +1,14 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/core.dart';
+import '../repositories/auth_repository.dart';
+
+class LogoutUser implements UseCase<void, NoParams> {
+  final AuthRepository repository;
+
+  LogoutUser(this.repository);
+
+  @override
+  Future<Either<Failure, void>> call(NoParams params) async {
+    return await repository.logout();
+  }
+}
