@@ -1,52 +1,284 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
-
-import '../widgets/dashboard_menu_card.dart';
-
+import '../../../../config/theme/app_theme.dart';
+import '../../../../core/constants/strings.dart';
+import '../../../../core/constants/dimens.dart';
+import '../../domain/entities/tool_item.dart';
+import '../../../../core/widgets/tool_card.dart';
+import '../../../campus_event/data/repositories/event_repository.dart';
+import '../../../campus_event/domain/entities/event_model.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final menus = [
-      {'title': 'Profile', 'route': '/profile', 'icon': Icons.person},
-      {'title': 'Course Schedule', 'route': '/schedule', 'icon': Icons.schedule},
-      {'title': 'Campus Event', 'route': '/events', 'icon': Icons.event},
-      {'title': 'Study Group', 'route': '/groups', 'icon': Icons.group},
-      {'title': 'Campus Map', 'route': '/map', 'icon': Icons.map},
-      {'title': 'Announcements', 'route': '/announcements', 'icon': Icons.announcement},
-    ];
-
     return Scaffold(
+      backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
-        title: const Text('Campus Life Dashboard'),
-        centerTitle: true,
-        backgroundColor: Colors.indigo,
-      ),
-      body: Container(
-        color: Colors.indigo[50],
-        child: GridView.builder(
-          padding: const EdgeInsets.all(20),
-          itemCount: menus.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 4 / 3,
-            crossAxisSpacing: 20,
-            mainAxisSpacing: 20,
+        leading: Padding(
+          padding: const EdgeInsets.all(AppDimens.paddingSmall),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.textWhite,
+              borderRadius: BorderRadius.circular(AppDimens.radiusSmall),
+            ),
+            child: const Icon(
+              Icons.school,
+              color: AppColors.primaryBlue,
+            ),
           ),
-          itemBuilder: (context, index) {
-            final menu = menus[index];
-            return DashboardMenuCard(
-              title: menu['title'] as String,
-              icon: menu['icon'] as IconData,
-              onTap: () => context.push(menu['route'] as String),
-            );
-          },
+        ),
+        title: const Text(
+          AppStrings.appName,
+          style: TextStyle(
+            color: AppColors.textWhite,
+            fontSize: AppDimens.fontLarge,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Campus Events Section
+              _buildEventsSection(context),
+              
+              // Tools Section
+              _buildToolsSection(context),
+              
+              // Add small bottom padding
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _buildEventsSection(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(AppDimens.marginMedium),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                AppStrings.campusEvents,
+                style: TextStyle(
+                  fontSize: AppDimens.fontXLarge,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.go('/events');
+                },
+                child: const Text(
+                  AppStrings.viewAll,
+                  style: TextStyle(
+                    fontSize: AppDimens.fontMedium,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: AppDimens.marginMedium),
+          
+          // Event Cards Horizontal Scroll
+          SizedBox(
+            height: 160,
+            child: ScrollConfiguration(
+              behavior: ScrollConfiguration.of(context).copyWith(
+                dragDevices: {
+                  PointerDeviceKind.touch,
+                  PointerDeviceKind.mouse,
+                },
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                physics: const BouncingScrollPhysics(),
+                clipBehavior: Clip.none,
+                itemCount: EventRepository.getAllEvents().length,
+                itemBuilder: (context, index) {
+                  final event = EventRepository.getAllEvents()[index];
+                  return Container(
+                    width: 120,
+                    margin: EdgeInsets.only(
+                      left: index == 0 ? 0 : AppDimens.marginMedium,
+                      right: index == EventRepository.getAllEvents().length - 1 ? AppDimens.marginMedium : 0,
+                    ),
+                    child: _buildDashboardEventCard(event),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardEventCard(Event event) {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () => context.go('/events'),
+        child: Card(
+          elevation: AppDimens.cardElevation,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusMedium),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Event Image (75% of total height)
+              Expanded(
+                flex: 75,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundGrey,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(AppDimens.radiusMedium),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.image_outlined,
+                          size: 30,
+                          color: AppColors.textSecondary,
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'รูปกิจกรรม',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Event Content (25% of total height)
+              Expanded(
+                flex: 25,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+                  child: Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolsSection(BuildContext context) {
+    final tools = [
+      ToolItem(
+        title: AppStrings.schedule,
+        icon: Icons.calendar_today,
+        backgroundColor: Colors.red,
+        onTap: () => context.go('/schedule'),
+      ),
+      ToolItem(
+        title: AppStrings.announcements,
+        icon: Icons.campaign,
+        backgroundColor: Colors.orange,
+        onTap: () => context.go('/announcements'),
+      ),
+      ToolItem(
+        title: AppStrings.map,
+        icon: Icons.location_on,
+        backgroundColor: Colors.green,
+        onTap: () => context.go('/map'),
+      ),
+      ToolItem(
+        title: AppStrings.studyGroups,
+        icon: Icons.groups,
+        backgroundColor: Colors.purple,
+        onTap: () => context.go('/groups'),
+      ),
+      ToolItem(
+        title: AppStrings.setting,
+        icon: Icons.settings,
+        backgroundColor: Colors.grey,
+        onTap: () {
+          // Show settings dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Settings'),
+                content: const Text('Settings feature will be implemented soon.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    ];
+
+    return Container(
+      margin: const EdgeInsets.all(AppDimens.marginMedium),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            AppStrings.tools,
+            style: TextStyle(
+              fontSize: AppDimens.fontXLarge,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          
+          const SizedBox(height: AppDimens.marginMedium),
+          
+          GridView.count(
+            crossAxisCount: 3,
+            crossAxisSpacing: 4.0,
+            mainAxisSpacing: 4.0,
+            childAspectRatio: 1.0,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: tools.map((tool) => ToolCard(toolItem: tool)).toList(),
+          ),
+        ],
+      ),
+    );
+  }
 }
-
-
