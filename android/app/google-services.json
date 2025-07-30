@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619832558867",
+    "project_id": "campuslifehub-ee53c",
+    "storage_bucket": "campuslifehub-ee53c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619832558867:android:86374848999d8b555006e6",
+        "android_client_info": {
+          "package_name": "com.example.campus_life_hub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZeAjh92gCZHJ9RyrIFR2259_WMgkIc3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
