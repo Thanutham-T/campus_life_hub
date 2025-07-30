@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../config/theme/app_theme.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/dimens.dart';
 import '../../../../core/widgets/custom_bottom_navigation_bar.dart';
 
@@ -58,3 +58,4 @@ class SchedulePage extends StatelessWidget {
     );
   }
 }
+

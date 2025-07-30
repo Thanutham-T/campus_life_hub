@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_bottom_navigation_bar.dart';
 import 'dashboard_page.dart';
 import '../../../announcement/presentation/pages/announcement_page.dart';
-import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../user/presentation/pages/profile_page.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;

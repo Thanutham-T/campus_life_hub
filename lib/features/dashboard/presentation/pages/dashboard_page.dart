@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../config/theme/app_theme.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/strings.dart';
 import '../../../../core/constants/dimens.dart';
 import '../../domain/entities/tool_item.dart';
@@ -163,7 +163,7 @@ class DashboardPage extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'รูปกิจกรรม',
+                          '�ٻ�Ԩ����',
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 9,

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/core.dart';
+import '../../../../core/errors/failures.dart';
 import '../repositories/auth_repository.dart';
 
 class ChangePassword implements UseCase<void, ChangePasswordParams> {
@@ -29,3 +29,4 @@ class ChangePasswordParams extends Equatable {
   @override
   List<Object> get props => [currentPassword, newPassword];
 }
+

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../config/theme/app_theme.dart';
+import '../constants/app_colors.dart';
 import '../../core/constants/dimens.dart';
 import '../../features/campus_event/domain/entities/event_model.dart';
 import '../../core/utils/event_image_helper.dart';

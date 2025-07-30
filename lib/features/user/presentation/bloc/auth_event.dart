@@ -127,3 +127,4 @@ class EmailVerificationCompleted extends AuthEvent {
   @override
   List<Object?> get props => [verificationCode];
 }
+

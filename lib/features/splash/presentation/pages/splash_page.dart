@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../config/theme/app_theme.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/strings.dart';
 
 class SplashPage extends StatefulWidget {
@@ -245,3 +245,4 @@ class _SplashPageState extends State<SplashPage>
     );
   }
 }
+

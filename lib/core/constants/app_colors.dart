@@ -53,4 +53,25 @@ class AppColors {
   // Overlay Colors
   static const Color overlay = Color(0x80000000);
   static const Color overlayLight = Color(0x40000000);
+
+  // Legacy colors for compatibility (from old theme)
+  static const Color primaryBlue = primary;
+  static const Color backgroundGrey = background;
+  static const Color backgroundWhite = surface;
+  static const Color cardBackground = surface;
+  static const Color textPrimary = onSurface;
+  static const Color textSecondary = grey600;
+  static const Color textWhite = onPrimary;
+  static const Color navigationActive = primary;
+  static const Color navigationInactive = grey500;
+  static const Color iconWhite = onPrimary;
+  static const Color iconGrey = grey600;
+  
+  // Tool Card Colors
+  static const Color orangeGradientStart = Color(0xFFFF8A00);
+  static const Color orangeGradientEnd = Color(0xFFFF6B00);
+  static const Color redGradientStart = Color(0xFFFF5252);
+  static const Color redGradientEnd = Color(0xFFE53935);
+  static const Color greenGradientStart = Color(0xFF4CAF50);
+  static const Color greenGradientEnd = Color(0xFF2E7D32);
 }

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/core.dart';
+import '../../../../core/errors/failures.dart';
 import '../entities/profile_entity.dart';
 import '../repositories/auth_repository.dart';
 
@@ -45,3 +45,4 @@ class UpdateProfileParams extends Equatable {
         profileImageUrl,
       ];
 }
+

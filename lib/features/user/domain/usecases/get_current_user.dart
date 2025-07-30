@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/core.dart';
+import '../../../../core/errors/failures.dart';
 import '../entities/profile_entity.dart';
 import '../repositories/auth_repository.dart';
 
@@ -13,3 +13,4 @@ class GetCurrentUser implements UseCase<ProfileEntity, NoParams> {
     return await repository.getCurrentUser();
   }
 }
+

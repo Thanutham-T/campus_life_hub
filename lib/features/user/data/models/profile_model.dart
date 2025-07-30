@@ -92,3 +92,4 @@ class ProfileModel extends ProfileEntity {
     );
   }
 }
+

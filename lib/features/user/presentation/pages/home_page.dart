@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/core.dart';
+import '../../../../core/errors/failures.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 
@@ -51,3 +51,5 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+
+

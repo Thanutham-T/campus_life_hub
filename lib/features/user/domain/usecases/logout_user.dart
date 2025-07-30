@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/core.dart';
+import '../../../../core/errors/failures.dart';
 import '../repositories/auth_repository.dart';
 
 class LogoutUser implements UseCase<void, NoParams> {
@@ -12,3 +12,4 @@ class LogoutUser implements UseCase<void, NoParams> {
     return await repository.logout();
   }
 }
+
