@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
 
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
@@ -30,10 +29,7 @@ final GoRouter appRouter = GoRouter(
       name: 'dashboard',
       builder: (context, state) => const DashboardPage(),
     ),
-    GoRoute(
-      path: '/',
-      redirect: (context, state) => '/login',
-    ),
+    GoRoute(path: '/', redirect: (context, state) => '/login'),
     GoRoute(
       path: '/profile',
       name: 'profile',
@@ -70,21 +66,4 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const HomePage(),
     ),
   ],
-  errorBuilder: (context, state) => Scaffold(
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('ไม่พบหน้าที่ต้องการ: ${state.matchedLocation}'),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context.go('/login'),
-            child: const Text('กลับไปหน้าแรก'),
-          ),
-        ],
-      ),
-    ),
-  ),
 );
