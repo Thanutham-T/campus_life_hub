@@ -1,4 +1,4 @@
-import '../models/profile_model.dart';
+import '../../models/profile_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<ProfileModel> login({
