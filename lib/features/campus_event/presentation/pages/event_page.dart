@@ -3,6 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/dimens.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../domain/entities/event_model.dart';
+import '../../../../core/utils/event_image_helper.dart';
 
 class EventPage extends StatelessWidget {
   const EventPage({super.key});
@@ -35,34 +36,17 @@ class EventPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Event Image
-          Container(
-            height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.backgroundGrey,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppDimens.radiusMedium),
-              ),
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppDimens.radiusMedium),
             ),
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.image_outlined,
-                    size: 48,
-                    color: AppColors.textSecondary,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'ภาพกิจกรรม',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: AppDimens.fontMedium,
-                    ),
-                  ),
-                ],
-              ),
+            child: EventImageHelper.buildEventImage(
+              imageUrl: event.imageUrl,
+              eventId: event.id,
+              eventTitle: event.title,
+              width: double.infinity,
+              height: 150,
+              fit: BoxFit.cover,
             ),
           ),
           

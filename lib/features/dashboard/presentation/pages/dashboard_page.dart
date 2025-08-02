@@ -8,6 +8,7 @@ import '../../domain/entities/tool_item.dart';
 import '../../../../core/widgets/tool_card.dart';
 import '../../../campus_event/data/repositories/event_repository.dart';
 import '../../../campus_event/domain/entities/event_model.dart';
+import '../../../../core/utils/event_image_helper.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -87,7 +88,7 @@ class DashboardPage extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final event = EventRepository.getAllEvents()[index];
                   return Container(
-                    width: 120,
+                    width: 144, // Increased by 20% (from 120 to 144)
                     margin: EdgeInsets.only(
                       left: index == 0 ? 0 : AppDimens.marginMedium,
                       right: index == EventRepository.getAllEvents().length - 1 ? AppDimens.marginMedium : 0,
@@ -118,33 +119,17 @@ class DashboardPage extends StatelessWidget {
               // Event Image (75% of total height)
               Expanded(
                 flex: 75,
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundGrey,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(AppDimens.radiusMedium),
-                    ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppDimens.radiusMedium),
                   ),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.image_outlined,
-                          size: 30,
-                          color: AppColors.textSecondary,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'กิจกรรม',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 9,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: EventImageHelper.buildEventImage(
+                    imageUrl: event.imageUrl,
+                    eventId: event.id,
+                    eventTitle: event.title,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
