@@ -3,7 +3,7 @@ import '../constants/app_colors.dart';
 import '../constants/dimens.dart';
 
 class EventImageHelper {
-  // Build event image widget with placeholder
+  // Build event image widget with placeholder - now supports both network and asset images
   static Widget buildEventImage({
     String? imageUrl,
     required String eventId,
@@ -13,6 +13,67 @@ class EventImageHelper {
     double? width,
     double? height,
   }) {
+    // If imageUrl is provided and is an asset path, use Image.asset
+    if (imageUrl != null && imageUrl.startsWith('assets/')) {
+      return ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: Image.asset(
+          imageUrl,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildPlaceholder(eventId, width, height, borderRadius);
+          },
+        ),
+      );
+    }
+    
+    // If imageUrl is provided and is a network URL, use network image
+    if (imageUrl != null && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+      return ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: Image.network(
+          imageUrl,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildPlaceholder(eventId, width, height, borderRadius);
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+                color: AppColors.backgroundGrey,
+              ),
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.navigationActive,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    // If no imageUrl provided, show placeholder
+    return _buildPlaceholder(eventId, width, height, borderRadius);
+  }
+
+  // Build placeholder widget with gradient background
+  static Widget _buildPlaceholder(String eventId, double? width, double? height, BorderRadius? borderRadius) {
     return Container(
       width: width,
       height: height,
@@ -31,92 +92,27 @@ class EventImageHelper {
             ),
           ),
           // Image placeholder overlay
-          if (imageUrl == null)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.image_outlined,
-                    size: 32,
-                    color: AppColors.textWhite.withValues(alpha: 0.7),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.image_outlined,
+                  size: 32,
+                  color: AppColors.textWhite.withValues(alpha: 0.7),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'ภาพกิจกรรม',
+                  style: TextStyle(
+                    color: AppColors.textWhite.withValues(alpha: 0.8),
+                    fontSize: AppDimens.fontSmall,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'ภาพกิจกรรม',
-                    style: TextStyle(
-                      color: AppColors.textWhite.withValues(alpha: 0.8),
-                      fontSize: AppDimens.fontSmall,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          // If imageUrl is provided, show network image
-          if (imageUrl != null)
-            ClipRRect(
-              borderRadius: borderRadius ?? BorderRadius.zero,
-              child: Image.network(
-                imageUrl,
-                width: width,
-                height: height,
-                fit: fit,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: width,
-                    height: height,
-                    decoration: BoxDecoration(
-                      borderRadius: borderRadius,
-                      gradient: _getGradientForEvent(eventId),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.broken_image_outlined,
-                            size: 32,
-                            color: AppColors.textWhite.withValues(alpha: 0.7),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'ไม่สามารถโหลดรูปได้',
-                            style: TextStyle(
-                              color: AppColors.textWhite.withValues(alpha: 0.8),
-                              fontSize: AppDimens.fontSmall,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    width: width,
-                    height: height,
-                    decoration: BoxDecoration(
-                      borderRadius: borderRadius,
-                      color: AppColors.backgroundGrey,
-                    ),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.navigationActive,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+          ),
         ],
       ),
     );
