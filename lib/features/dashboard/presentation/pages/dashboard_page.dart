@@ -14,46 +14,20 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundGrey,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(AppDimens.paddingSmall),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.textWhite,
-              borderRadius: BorderRadius.circular(AppDimens.radiusSmall),
-            ),
-            child: const Icon(
-              Icons.school,
-              color: AppColors.primaryBlue,
-            ),
-          ),
-        ),
-        title: const Text(
-          AppStrings.appName,
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: AppDimens.fontLarge,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Campus Events Section
-              _buildEventsSection(context),
-              
-              // Tools Section
-              _buildToolsSection(context),
-              
-              // Add small bottom padding
-              const SizedBox(height: 16),
-            ],
-          ),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Campus Events Section
+            _buildEventsSection(context),
+            
+            // Tools Section
+            _buildToolsSection(context),
+            
+            // Add small bottom padding for navigation bar
+            const SizedBox(height: 80),
+          ],
         ),
       ),
     );
@@ -163,7 +137,7 @@ class DashboardPage extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'ÃÙ»¡Ô¨¡ÃÃÁ',
+                          'à¸à¸´à¸ˆà¸à¸£à¸£à¸¡',
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 9,
@@ -219,7 +193,13 @@ class DashboardPage extends StatelessWidget {
         title: AppStrings.map,
         icon: Icons.location_on,
         backgroundColor: Colors.green,
-        onTap: () => context.go('/map'),
+        onTap: () => context.go('/campus-map'),
+      ),
+      ToolItem(
+        title: 'Profile',
+        icon: Icons.person,
+        backgroundColor: Colors.blue,
+        onTap: () => context.go('/profile'),
       ),
       ToolItem(
         title: AppStrings.studyGroups,

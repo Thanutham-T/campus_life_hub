@@ -1,54 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/dimens.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../domain/entities/event_model.dart';
-import '../../../../core/widgets/custom_bottom_navigation_bar.dart';
 
 class EventPage extends StatelessWidget {
   const EventPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundGrey,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textWhite),
-          onPressed: () => context.go('/'),
-        ),
-        title: const Text(
-          'Campus Events',
-        ),
-      ),
-      body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.all(AppDimens.paddingMedium),
-          itemCount: EventRepository.getAllEvents().length,
-          itemBuilder: (context, index) {
-            final event = EventRepository.getAllEvents()[index];
-            return Container(
-              margin: const EdgeInsets.only(bottom: AppDimens.marginMedium),
-              child: _buildSimpleEventCard(event),
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: -1, // No tab highlighted for event page
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go('/');
-              break;
-            case 1:
-              context.go('/announcements'); // Navigate to announcements via MainScreen
-              break;
-            case 2:
-              // Navigate to profile when implemented
-              break;
-          }
+    return SafeArea(
+      child: ListView.builder(
+        padding: const EdgeInsets.all(AppDimens.paddingMedium),
+        itemCount: EventRepository.getAllEvents().length,
+        itemBuilder: (context, index) {
+          final event = EventRepository.getAllEvents()[index];
+          return Container(
+            margin: const EdgeInsets.only(bottom: AppDimens.marginMedium),
+            child: _buildSimpleEventCard(event),
+          );
         },
       ),
     );
