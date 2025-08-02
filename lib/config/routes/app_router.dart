@@ -2,8 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/splash/presentation/pages/splash_page.dart';
-import '../../features/dashboard/presentation/pages/main_screen.dart';
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
 import '../../features/user/presentation/pages/register_page.dart';
 import '../../features/user/presentation/pages/profile_page.dart';
@@ -13,19 +11,16 @@ import '../../features/campus_event/presentation/pages/event_page.dart';
 import '../../features/study_group/presentation/pages/study_group_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
 import '../../features/announcement/presentation/pages/announcement_page.dart';
+import '../../main.dart';
+
+// Import dashboard_page แบบตรงๆ
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
   routes: [
-    // Splash และ Main Screen (จาก meepooh)
+    // Routes without bottom navigation
     GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
-    GoRoute(path: '/', builder: (context, state) => const MainScreen()),
-    GoRoute(path: '/home/:index', builder: (context, state) {
-      final index = int.tryParse(state.pathParameters['index'] ?? '0') ?? 0;
-      return MainScreen(initialIndex: index);
-    }),
-
-    // Authentication routes (จาก Atom)
     GoRoute(
       path: '/login',
       name: 'login',
@@ -37,50 +32,67 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const RegisterPage(),
     ),
     GoRoute(
+      path: '/map',
+      name: 'map',
+      builder: (context, state) => const CampusMapPage(),
+    ),
+
+    // Routes with bottom navigation - using ShellRoute
+    ShellRoute(
+      builder: (context, state, child) => MainLayout(child: child),
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const DashboardPage(),
+        ),
+        GoRoute(
+          path: '/schedule',
+          name: 'schedule',
+          builder: (context, state) => const SchedulePage(),
+        ),
+        GoRoute(
+          path: '/events',
+          name: 'events',
+          builder: (context, state) => const EventPage(),
+        ),
+        GoRoute(
+          path: '/groups',
+          name: 'groups',
+          builder: (context, state) => const StudyGroupPage(),
+        ),
+        GoRoute(
+          path: '/announcements',
+          name: 'announcements',
+          builder: (context, state) => const AnnouncementPage(
+            showBackButton: false,
+            showBottomNav: false,
+          ),
+        ),
+        GoRoute(
+          path: '/campus-map',
+          name: 'campus-map',
+          builder: (context, state) => const CampusMapPage(),
+        ),
+        GoRoute(
+          path: '/profile',
+          name: 'profile',
+          builder: (context, state) => const ProfilePage(),
+        ),
+      ],
+    ),
+
+    // Deprecated routes (for backward compatibility)
+    GoRoute(
       path: '/dashboard',
       name: 'dashboard',
-      builder: (context, state) => const DashboardPage(),
-    ),
-    GoRoute(
-      path: '/profile',
-      name: 'profile',
-      builder: (context, state) => const ProfilePage(),
+      redirect: (context, state) => '/',
     ),
     GoRoute(
       path: '/home',
       name: 'home',
       builder: (context, state) => const HomePage(),
     ),
-
-    // Feature routes (รวมจากทั้งคู่)
-    GoRoute(
-      path: '/schedule',
-      name: 'schedule',
-      builder: (context, state) => const SchedulePage(),
-    ),
-    GoRoute(
-      path: '/events',
-      name: 'events',
-      builder: (context, state) => const EventPage(),
-    ),
-    GoRoute(
-      path: '/groups',
-      name: 'groups',
-      builder: (context, state) => const StudyGroupPage(),
-    ),
-    GoRoute(
-      path: '/map',
-      name: 'map',
-      builder: (context, state) => const CampusMapPage(),
-    ),
-    GoRoute(
-      path: '/announcements',
-      name: 'announcements',
-      builder: (context, state) => const AnnouncementPage(
-        showBackButton: true,
-        showBottomNav: true,
-      ),
-    ),
+    GoRoute(path: '/home/:index', redirect: (context, state) => '/'),
   ],
   errorBuilder: (context, state) => Scaffold(
     body: Center(
