@@ -5,7 +5,7 @@ class EventRepository {
   // Simulated user joined events
   static final Set<String> _joinedEvents = {'2'};
 
-  // Static event data - ใช้ placeholder สำหรับรูปภาพทั้งหมด
+  // Static event data - with local asset images
   static final List<Event> _allEvents = [
     Event(
       id: '1',
@@ -15,6 +15,7 @@ class EventRepository {
       description: 'ชมรมนักศึกษาขององค์การประกวดดาว-เดือน ภาคในวันที่ 28 ก.ค. ที่งานกิจกรรมนักศึกษา',
       category: EventCategory.competition,
       status: EventStatus.upcoming,
+      imageUrl: 'assets/events/ประกวดดาวเดือน.jpg',
     ),
     Event(
       id: '2',
@@ -24,6 +25,7 @@ class EventRepository {
       description: 'กิจกรรมการแบ่งปันและพูดคุยเกี่ยวกับหนังสือดีๆ ที่น่าสนใจ รวมถึงกิจกรรมการอ่าน',
       category: EventCategory.academic,
       status: EventStatus.ongoing,
+      imageUrl: 'assets/events/การอ่านหนังสือ.jpg',
     ),
     Event(
       id: '3',
@@ -33,6 +35,7 @@ class EventRepository {
       description: 'กิจกรรมวิ่งเพื่อสุขภาพประจำปี เปิดให้นักศึกษาและบุคลากรเข้าร่วม',
       category: EventCategory.sports,
       status: EventStatus.upcoming,
+      imageUrl: 'assets/events/งานวิ่งฟันรัน.jpg',
     ),
     Event(
       id: '4',
@@ -42,6 +45,7 @@ class EventRepository {
       description: 'ชมภาพยนตร์คุณภาพพร้อมกิจกรรมสนทนาหลังการฉาย',
       category: EventCategory.cultural,
       status: EventStatus.upcoming,
+      imageUrl: 'assets/events/ชมภาพยนตร์สนทนา.jpg',
     ),
     Event(
       id: '5',
@@ -51,6 +55,7 @@ class EventRepository {
       description: 'แสดงผลงานศิลปะจากนักศึกษาคณะต่างๆ',
       category: EventCategory.cultural,
       status: EventStatus.upcoming,
+      imageUrl: 'assets/events/นิทรรศการศิลปะ.jpg',
     ),
     Event(
       id: '6',
@@ -60,6 +65,7 @@ class EventRepository {
       description: 'เรียนรู้เทคนิคการสร้างเนื้อหาและผลิตพอดแคสต์',
       category: EventCategory.academic,
       status: EventStatus.upcoming,
+      imageUrl: 'assets/events/พอดแคสต์.jpg',
     ),
     Event(
       id: '7',
@@ -69,6 +75,7 @@ class EventRepository {
       description: 'งานฉลองวันสถาปนามหาวิทยาลัย พร้อมกิจกรรมมากมาย',
       category: EventCategory.general,
       status: EventStatus.upcoming,
+      imageUrl: 'assets/events/วันสถาปนา.jpg',
     ),
   ];
 
