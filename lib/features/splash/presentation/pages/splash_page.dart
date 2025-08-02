@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/strings.dart';
+import '../../../user/presentation/bloc/auth_bloc.dart';
+import '../../../user/presentation/bloc/auth_state.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -85,8 +88,17 @@ class _SplashPageState extends State<SplashPage>
     await Future.delayed(const Duration(milliseconds: 3000));
     
     if (mounted) {
-      // Navigate to dashboard using GoRouter
-      context.go('/');
+      // Check authentication state and navigate accordingly
+      final authBloc = context.read<AuthBloc>();
+      final authState = authBloc.state;
+      
+      if (authState is AuthAuthenticated) {
+        // User is logged in, go to dashboard
+        context.go('/dashboard');
+      } else {
+        // User is not logged in, go to login
+        context.go('/login');
+      }
     }
   }
 

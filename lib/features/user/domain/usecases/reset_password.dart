@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/usecases/usecase.dart';
 import '../repositories/auth_repository.dart';
 
 class ResetPassword implements UseCase<void, ResetPasswordParams> {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/widgets/app_button.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 
