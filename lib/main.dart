@@ -5,8 +5,10 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'config/routes/app_router.dart';
 import 'config/themes/app_theme.dart';
-import 'l10n/app_localizations.dart';
-import 'injection_container.dart' as di;
+import 'config/localization/app_localizations.dart';
+import 'config/di/injector.dart' as di;
+
+import 'injection_container.dart' as auth_di;
 import 'features/user/presentation/bloc/auth_bloc.dart';
 import 'features/user/presentation/bloc/auth_event.dart';
 
@@ -18,6 +20,7 @@ void main() async {
   
   // Initialize dependency injection
   await di.init();
+  await auth_di.init();
   
   runApp(const MyApp());
 }
