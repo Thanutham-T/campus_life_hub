@@ -45,3 +45,4 @@ class UpdateProfileParams extends Equatable {
         profileImageUrl,
       ];
 }
+

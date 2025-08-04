@@ -22,3 +22,4 @@ class ResetPasswordParams extends Equatable {
   @override
   List<Object> get props => [email];
 }
+

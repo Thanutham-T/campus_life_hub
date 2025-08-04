@@ -49,3 +49,4 @@ abstract class AuthRepository {
 
   Future<Either<Failure, void>> clearLocalData();
 }
+

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../routes/app_routes.dart';
 import '../routes/app_route_builders.dart';
 
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
 import '../../features/user/presentation/pages/register_page.dart';
 // import '../../features/user/presentation/pages/profile_page.dart';
@@ -12,6 +12,10 @@ import '../../features/campus_event/presentation/pages/event_page.dart';
 import '../../features/study_group/presentation/pages/study_group_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
 import '../../features/announcement/presentation/pages/announcement_page.dart';
+import '../../main.dart';
+
+// Import dashboard_page แบบตรงๆ
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 
 
 final GoRouter appRouter = GoRouter(

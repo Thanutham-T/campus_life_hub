@@ -53,3 +53,4 @@ class RegisterParams extends Equatable {
         department,
       ];
 }
+

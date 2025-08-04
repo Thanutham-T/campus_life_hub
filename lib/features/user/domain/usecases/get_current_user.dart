@@ -13,3 +13,4 @@ class GetCurrentUser implements UseCase<ProfileEntity, NoParams> {
     return await repository.getCurrentUser();
   }
 }
+

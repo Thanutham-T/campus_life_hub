@@ -24,14 +24,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (credential.user == null) {
-        throw const ServerFailure('การเข้าสู่ระบบล้มเหลว');
+        throw const ServerException('การเข้าสู่ระบบล้มเหลว');
       }
 
       return _mapFirebaseUserToProfile(credential.user!);
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดที่ไม่คาดคิด');
+      throw const ServerException('เกิดข้อผิดพลาดที่ไม่คาดคิด');
     }
   }
 
@@ -52,7 +52,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (credential.user == null) {
-        throw const ServerFailure('การสร้างบัญชีล้มเหลว');
+        throw const ServerException('การสร้างบัญชีล้มเหลว');
       }
 
       // Update display name in Firebase
@@ -67,9 +67,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         department: department,
       );
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดที่ไม่คาดคิด');
+      throw const ServerException('เกิดข้อผิดพลาดที่ไม่คาดคิด');
     }
   }
 
@@ -78,9 +78,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await firebaseAuth.signOut();
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการออกจากระบบ');
+      throw const ServerException('เกิดข้อผิดพลาดในการออกจากระบบ');
     }
   }
 
@@ -89,12 +89,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final currentUser = firebaseAuth.currentUser;
       if (currentUser == null) {
-        throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
+        throw const ServerException('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
       return _mapFirebaseUserToProfile(currentUser);
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
+      throw const ServerException('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
     }
   }
 
@@ -109,7 +109,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final currentUser = firebaseAuth.currentUser;
       if (currentUser == null) {
-        throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
+        throw const ServerException('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
       // Update display name and photo URL in Firebase
@@ -127,9 +127,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         profileImageUrl: profileImageUrl,
       );
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการอัปเดตโปรไฟล์');
+      throw const ServerException('เกิดข้อผิดพลาดในการอัปเดตโปรไฟล์');
     }
   }
 
@@ -141,7 +141,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final currentUser = firebaseAuth.currentUser;
       if (currentUser == null) {
-        throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
+        throw const ServerException('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
       // Re-authenticate user before changing password
@@ -153,9 +153,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await currentUser.reauthenticateWithCredential(credential);
       await currentUser.updatePassword(newPassword);
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+      throw const ServerException('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
     }
   }
 
@@ -164,9 +164,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการส่งอีเมลรีเซ็ตรหัสผ่าน');
+      throw const ServerException('เกิดข้อผิดพลาดในการส่งอีเมลรีเซ็ตรหัสผ่าน');
     }
   }
 
@@ -175,14 +175,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final currentUser = firebaseAuth.currentUser;
       if (currentUser == null) {
-        throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
+        throw const ServerException('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
       await currentUser.sendEmailVerification();
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการส่งอีเมลยืนยัน');
+      throw const ServerException('เกิดข้อผิดพลาดในการส่งอีเมลยืนยัน');
     }
   }
 
@@ -191,9 +191,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await firebaseAuth.applyActionCode(verificationCode);
     } on FirebaseAuthException catch (e) {
-      throw ServerFailure(_getFirebaseErrorMessage(e.code));
+      throw ServerException(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการยืนยันอีเมล');
+      throw const ServerException('เกิดข้อผิดพลาดในการยืนยันอีเมล');
     }
   }
 
@@ -205,7 +205,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         await currentUser.getIdToken(true); // Force refresh
       }
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดในการรีเฟรชโทเค็น');
+      throw const ServerException('เกิดข้อผิดพลาดในการรีเฟรชโทเค็น');
     }
   }
 
@@ -265,3 +265,4 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 }
+

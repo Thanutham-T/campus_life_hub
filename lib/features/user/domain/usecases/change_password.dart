@@ -29,3 +29,4 @@ class ChangePasswordParams extends Equatable {
   @override
   List<Object> get props => [currentPassword, newPassword];
 }
+

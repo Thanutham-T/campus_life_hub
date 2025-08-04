@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
-
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/dimens.dart';
 
 class StudyGroupPage extends StatelessWidget {
   const StudyGroupPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Study Groups')),
-      body: const Center(child: Text('Study group details go here.')),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimens.paddingMedium),
+        child: const Center(
+          child: Text(
+            'Study group details go here.',
+            style: TextStyle(
+              fontSize: AppDimens.fontLarge,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
