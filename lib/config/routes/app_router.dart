@@ -15,7 +15,7 @@ import '../../features/announcement/presentation/pages/announcement_page.dart';
 
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: Routes.course,
+  initialLocation: Routes.login,
   routes: [
     // GoRoute(path: '/', name: 'onboarding', redirect: (context, state) => const OnBoardingPage()),
     GoRoute(path: Routes.login, name: 'login', builder: (context, state) => const LoginPage()),
