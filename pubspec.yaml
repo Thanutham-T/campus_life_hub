@@ -52,6 +52,7 @@ dependencies:
   google_maps_flutter: ^2.5.0  # Google Maps
   geolocator: ^9.0.2           # Location services
   permission_handler: ^11.3.1  # Location permissions
+  flutter_slidable: ^4.0.0     # For sliding actions on list items
   flutter_localizations:
     sdk: flutter
 
