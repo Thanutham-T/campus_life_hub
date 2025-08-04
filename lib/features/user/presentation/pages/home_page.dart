@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/core.dart';
+import '../../../../core/core_modules.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 

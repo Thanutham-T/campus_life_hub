@@ -1,5 +1,6 @@
+import 'package:campus_life_hub/core/errors/failures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/core.dart';
+import '../../../../core/core_modules.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../models/profile_model.dart';
 import 'auth_remote_data_source.dart';

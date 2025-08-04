@@ -1,4 +1,3 @@
-import 'package:campus_life_hub/core/widgets/widgets.dart';
 import 'package:campus_life_hub/core/constants/constants.dart';
 import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
 import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
@@ -7,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../core/core_modules.dart';
 
 
 class RegisterPage extends StatefulWidget {
