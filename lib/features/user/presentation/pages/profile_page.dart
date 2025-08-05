@@ -51,7 +51,12 @@ class _ProfilePageState extends State<ProfilePage>
   Widget build(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.fromLTRB(
+          16.0,
+          16.0,
+          16.0,
+          16.0 + MediaQuery.of(context).viewInsets.bottom, // เพิ่ม padding ด้านล่างเพื่อป้องกัน overflow
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -458,11 +463,9 @@ class _ProfilePageState extends State<ProfilePage>
                               ),
                               textAlign: TextAlign.right,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             
-                            const SizedBox(height: 12),
-                            
-                            // Student ID
+                            // Student ID (ย้ายมาไว้ระหว่างชื่อกับคณะ)
                             Text(
                               ProfileDI.getStudentId(),
                               style: const TextStyle(
@@ -471,6 +474,21 @@ class _ProfilePageState extends State<ProfilePage>
                                 fontWeight: FontWeight.w500,
                               ),
                               textAlign: TextAlign.right,
+                            ),
+                            
+                            const SizedBox(height: 8),
+                            
+                            // Faculty (ย้ายมาไว้ล่างสุด)
+                            Text(
+                              ProfileDI.getUserFaculty(),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 11, // ลดจาก 12 เป็น 10 เพื่อให้พอดีบรรทัดเดียว
+                                fontWeight: FontWeight.w400,
+                              ),
+                              textAlign: TextAlign.right,
+                              maxLines: 1, // เปลี่ยนจาก 2 เป็น 1
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -498,44 +516,28 @@ class _ProfilePageState extends State<ProfilePage>
                 
                 // Bottom area - University info
                 Container(
-                  height: 50, // กำหนดความสูงคงที่เพื่อป้องกัน overflow
+                  height: 35, // ลดความสูงจาก 50 เป็น 35px เพื่อให้ข้อความอยู่ชิดขอบล่างมากขึ้น
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end, // เปลี่ยนกลับเป็น end เพื่อให้ชิดขอบล่าง
                     children: [
-                      // Left - DEV logo and text
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            const Text(
-                              'DEV',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'มหาวิทยาลัยโมบายแอพ',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 12,
-                                height: 1.1,
-                              ),
-                            ),
-                          ],
+                      // Left - DEV logo
+                      const Text(
+                        'DEV',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       
-                      // Right - Faculty (เปลี่ยนจากสาขาเป็นคณะ)
+                      // Right - มหาวิทยาลัยโมบายแอพ
                       Text(
-                        ProfileDI.getUserFaculty(),
+                        'มหาวิทยาลัยโมบายแอพ',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          height: 1.1,
                         ),
                       ),
                     ],

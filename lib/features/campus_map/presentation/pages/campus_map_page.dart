@@ -34,6 +34,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
   Map<String, dynamic>? _selectedLocationData;
   double? _drivingTime;
   double? _walkingTime;
+  bool _isNavigationMode = false; // เพิ่ม state สำหรับโหมดนำทาง
 
   // Google Maps API Key
   static const String _apiKey = 'AIzaSyCY1ZdVt3W2qlTYOxmKmrbApG3n7pHvoW0';
@@ -453,77 +454,87 @@ class _CampusMapPageState extends State<CampusMapPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      isScrollControlled: true,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'ติดต่อ',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7, // จำกัดความสูงไม่เกิน 70% ของหน้าจอ
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ติดต่อ',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Phone
+                if (locationData['phone'] != null)
+                  ListTile(
+                    leading: const Icon(Icons.phone, color: Colors.green),
+                    title: Text(
+                      locationData['phone'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    subtitle: const Text('เบอร์โทรศัพท์'),
+                    onTap: () => _makePhoneCall(locationData['phone']),
+                  ),
+                
+                // Website
+                if (locationData['website'] != null)
+                  ListTile(
+                    leading: const Icon(Icons.language, color: Colors.orange),
+                    title: Text(
+                      locationData['website'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    subtitle: const Text('เว็บไซต์'),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Website: ${locationData['website']}')),
+                      );
+                    },
+                  ),
+                
+                // Address
+                if (locationData['address'] != null)
+                  ListTile(
+                    leading: const Icon(Icons.location_on, color: Colors.red),
+                    title: Text(
+                      locationData['address'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    subtitle: const Text('ที่อยู่'),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('ที่อยู่: ${locationData['address']}')),
+                      );
+                    },
+                  ),
+                
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('ปิด'),
+                  ),
+                ),
+                // เพิ่ม padding ด้านล่างเพื่อให้มีพื้นที่เพียงพอสำหรับปุ่ม
+                SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+              ],
             ),
-            const SizedBox(height: 16),
-            
-            // Phone
-            if (locationData['phone'] != null)
-              ListTile(
-                leading: const Icon(Icons.phone, color: Colors.green),
-                title: Text(
-                  locationData['phone'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                subtitle: const Text('เบอร์โทรศัพท์'),
-                onTap: () => _makePhoneCall(locationData['phone']),
-              ),
-            
-            // Website
-            if (locationData['website'] != null)
-              ListTile(
-                leading: const Icon(Icons.language, color: Colors.orange),
-                title: Text(
-                  locationData['website'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                subtitle: const Text('เว็บไซต์'),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Website: ${locationData['website']}')),
-                  );
-                },
-              ),
-            
-            // Address
-            if (locationData['address'] != null)
-              ListTile(
-                leading: const Icon(Icons.location_on, color: Colors.red),
-                title: Text(
-                  locationData['address'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
-                subtitle: const Text('ที่อยู่'),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('ที่อยู่: ${locationData['address']}')),
-                  );
-                },
-              ),
-            
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('ปิด'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -531,6 +542,9 @@ class _CampusMapPageState extends State<CampusMapPage> {
 
   void _navigateToLocation(LatLng destination) {
     if (_currentPosition != null) {
+      setState(() {
+        _isNavigationMode = true; // เปลี่ยนเป็นโหมดนำทาง
+      });
       _createRoute(_currentPosition!, destination);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -785,19 +799,18 @@ class _CampusMapPageState extends State<CampusMapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Google Map
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            onTap: _onMapTap,
-            initialCameraPosition: const CameraPosition(
-              target: _universityCenter,
-              zoom: 16.0,
-            ),
-            markers: _tempMarkers, // Show only temporary markers
-            polylines: _polylines,
+    return Stack(
+      children: [
+        // Google Map
+        GoogleMap(
+          onMapCreated: _onMapCreated,
+          onTap: _onMapTap,
+          initialCameraPosition: const CameraPosition(
+            target: _universityCenter,
+            zoom: 16.0,
+          ),
+          markers: _tempMarkers, // Show only temporary markers
+          polylines: _polylines,
             myLocationEnabled: _isLocationEnabled,
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
@@ -819,7 +832,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -857,7 +870,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -890,7 +903,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -937,7 +950,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -1000,168 +1013,233 @@ class _CampusMapPageState extends State<CampusMapPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _selectedLocationName ?? '',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                      // แสดงแบบย่อเมื่ออยู่ในโหมดนำทาง
+                      if (_isNavigationMode) ...[
+                        // แสดงเฉพาะข้อมูลพื้นฐานเมื่อนำทาง
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _selectedLocationName ?? '',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            setState(() {
-                              _selectedLocationName = null;
-                              _selectedLocationData = null;
-                              _drivingTime = null;
-                              _walkingTime = null;
-                              _tempMarkers = {}; // Clear all markers
-                              _polylines = {}; // Clear navigation route
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    if (_selectedLocationData != null) ...[
-                      Text(
-                        _selectedLocationData!['description'],
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Travel times
-                      if (_drivingTime != null || _walkingTime != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Wrap(
-                            spacing: 16,
-                            children: [
-                              if (_drivingTime != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.directions_car, size: 20, color: Colors.blue),
-                                    const SizedBox(width: 4),
-                                    Text('${_drivingTime!.round()} นาที'),
-                                  ],
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Travel times
+                                if (_drivingTime != null || _walkingTime != null) ...[
+                                  if (_drivingTime != null)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.directions_car, size: 16, color: Colors.blue),
+                                        const SizedBox(width: 2),
+                                        Text('${_drivingTime!.round()} นาที', style: const TextStyle(fontSize: 12)),
+                                      ],
+                                    ),
+                                  const SizedBox(width: 8),
+                                  if (_walkingTime != null)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.directions_walk, size: 16, color: Colors.green),
+                                        const SizedBox(width: 2),
+                                        Text('${_walkingTime!.round()} นาที', style: const TextStyle(fontSize: 12)),
+                                      ],
+                                    ),
+                                  const SizedBox(width: 8),
+                                ],
+                                IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedLocationName = null;
+                                      _selectedLocationData = null;
+                                      _drivingTime = null;
+                                      _walkingTime = null;
+                                      _tempMarkers = {}; // Clear all markers
+                                      _polylines = {}; // Clear navigation route
+                                      _isNavigationMode = false; // Reset navigation mode
+                                    });
+                                  },
                                 ),
-                              if (_walkingTime != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.directions_walk, size: 20, color: Colors.green),
-                                    const SizedBox(width: 4),
-                                    Text('${_walkingTime!.round()} นาที'),
-                                  ],
-                                ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      
-                      // Operating hours, rating, and status
-                      if (_selectedLocationData!['rating'] != null) ...[
-                        Row(
-                          children: [
-                            const Icon(Icons.star, size: 16, color: Colors.orange),
-                            const SizedBox(width: 4),
-                            Text('${_selectedLocationData!['rating']} ดาว'),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      
-                      // Operating status and hours
-                      if (_selectedLocationData!['openingHours'] != null || _selectedLocationData!['isOpenNow'] != null) ...[
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time, size: 16, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            if (_selectedLocationData!['openingHours'] is List)
-                              Flexible(
-                                child: Text(
-                                  _selectedLocationData!['openingHours'][0] ?? 'ไม่มีข้อมูล',
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              )
-                            else
-                              Flexible(
-                                child: Text(
-                                  _selectedLocationData!['openingHours']?.toString() ?? 'ไม่มีข้อมูล',
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '(${_getOperatingStatus(_selectedLocationData!['openingHours'])})',
-                              style: TextStyle(
-                                color: _getOperatingStatus(_selectedLocationData!['openingHours']) == 'เปิดบริการ' 
-                                    ? Colors.green 
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                      ],
-                      
-                      // Action buttons
-                      Row(
+                      ] else ...[
+                        // แสดงแบบเต็มเมื่อไม่ได้นำทาง (แบบเดิม)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _navigateToLocation(_selectedLocationData!['position']),
-                              icon: const Icon(Icons.directions, size: 18),
-                              label: const Text(
-                                'นำทาง',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                            child: Text(
+                              _selectedLocationName ?? '',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _goToLocation(_selectedLocationData!['position']),
-                              icon: const Icon(Icons.zoom_in, size: 18),
-                              label: const Text(
-                                'ดูตำแหน่ง',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
                           IconButton(
-                            onPressed: () => _showContactOptions(_selectedLocationData!),
-                            icon: const Icon(Icons.contact_phone, color: Colors.green),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.green.withValues(alpha: 0.1),
-                            ),
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              setState(() {
+                                _selectedLocationName = null;
+                                _selectedLocationData = null;
+                                _drivingTime = null;
+                                _walkingTime = null;
+                                _tempMarkers = {}; // Clear all markers
+                                _polylines = {}; // Clear navigation route
+                                _isNavigationMode = false; // Reset navigation mode
+                              });
+                            },
                           ),
                         ],
                       ),
-                    ], // Close the if (_selectedLocationData != null) ... [ spread operator
+                      if (_selectedLocationData != null && !_isNavigationMode) ...[
+                        Text(
+                          _selectedLocationData!['description'],
+                          style: const TextStyle(fontSize: 16, color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Travel times
+                        if (_drivingTime != null || _walkingTime != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Wrap(
+                              spacing: 16,
+                              children: [
+                                if (_drivingTime != null)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.directions_car, size: 20, color: Colors.blue),
+                                      const SizedBox(width: 4),
+                                      Text('${_drivingTime!.round()} นาที'),
+                                    ],
+                                  ),
+                                if (_walkingTime != null)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.directions_walk, size: 20, color: Colors.green),
+                                      const SizedBox(width: 4),
+                                      Text('${_walkingTime!.round()} นาที'),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                        
+                        // Operating hours, rating, and status
+                        if (_selectedLocationData!['rating'] != null) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.star, size: 16, color: Colors.orange),
+                              const SizedBox(width: 4),
+                              Text('${_selectedLocationData!['rating']} ดาว'),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        
+                        // Operating status and hours
+                        if (_selectedLocationData!['openingHours'] != null || _selectedLocationData!['isOpenNow'] != null) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              if (_selectedLocationData!['openingHours'] is List)
+                                Flexible(
+                                  child: Text(
+                                    _selectedLocationData!['openingHours'][0] ?? 'ไม่มีข้อมูล',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                )
+                              else
+                                Flexible(
+                                  child: Text(
+                                    _selectedLocationData!['openingHours']?.toString() ?? 'ไม่มีข้อมูล',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '(${_getOperatingStatus(_selectedLocationData!['openingHours'])})',
+                                style: TextStyle(
+                                  color: _getOperatingStatus(_selectedLocationData!['openingHours']) == 'เปิดบริการ' 
+                                      ? Colors.green 
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        
+                        // Action buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _navigateToLocation(_selectedLocationData!['position']),
+                                icon: const Icon(Icons.directions, size: 18),
+                                label: const Text(
+                                  'นำทาง',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                ),
+                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _goToLocation(_selectedLocationData!['position']),
+                                icon: const Icon(Icons.zoom_in, size: 18),
+                                label: const Text(
+                                  'ดูตำแหน่ง',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              onPressed: () => _showContactOptions(_selectedLocationData!),
+                              icon: const Icon(Icons.contact_phone, color: Colors.green),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.green.withOpacity(0.1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ], // Close the main if-else condition
                     ], // Close the Column's children array
                   ),
                 ),
@@ -1169,8 +1247,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
             ),
           ),
         ], // Close the Stack's children array
-      ),
-    );
+      );
   }
 
   IconData _getLocationIcon(String type) {

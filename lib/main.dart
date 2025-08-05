@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
 import 'config/routes/app_router.dart';
+import 'config/routes/app_routes.dart';
 import 'config/themes/app_theme.dart';
 import 'config/localization/app_localizations.dart';
 import 'config/di/injector.dart' as di;
@@ -78,25 +79,25 @@ class _MainLayoutState extends State<MainLayout> {
   void _onNavigationTap(int index) {
     switch (index) {
       case 0:
-        context.go('/');
+        context.go(Routes.dashboard);
         break;
       case 1:
-        context.go('/schedule');
+        context.go(Routes.course);
         break;
       case 2:
-        context.go('/events');
+        context.go(Routes.events);
         break;
       case 3:
-        context.go('/groups');
+        context.go(Routes.studyGroups);
         break;
       case 4:
-        context.go('/announcements');
+        context.go(Routes.announcements);
         break;
       case 5:
-        context.go('/campus-map');
+        context.go(Routes.campusMap);
         break;
       case 6:
-        context.go('/profile');
+        context.go(Routes.profile);
         break;
     }
   }
@@ -107,35 +108,35 @@ class _MainLayoutState extends State<MainLayout> {
     final location = GoRouterState.of(context).uri.toString();
     int currentIndex = 0;
     
-    if (location == '/') {
+    if (location == Routes.dashboard) {
       currentIndex = 0;
-    } else if (location.startsWith('/schedule')) {
+    } else if (location.startsWith(Routes.course)) {
       currentIndex = 1;
-    } else if (location.startsWith('/events')) {
+    } else if (location.startsWith(Routes.events)) {
       currentIndex = 2;
-    } else if (location.startsWith('/groups')) {
+    } else if (location.startsWith(Routes.studyGroups)) {
       currentIndex = 3;
-    } else if (location.startsWith('/announcements')) {
+    } else if (location.startsWith(Routes.announcements)) {
       currentIndex = 4;
-    } else if (location.startsWith('/campus-map')) {
+    } else if (location.startsWith(Routes.campusMap)) {
       currentIndex = 5;
-    } else if (location.startsWith('/profile')) {
+    } else if (location.startsWith(Routes.profile)) {
       currentIndex = 6;
     }
 
     // Get page title based on current route
     String pageTitle = 'Campus Life Hub';
-    if (location.startsWith('/schedule')) {
+    if (location.startsWith(Routes.course)) {
       pageTitle = 'Course Schedule';
-    } else if (location.startsWith('/events')) {
+    } else if (location.startsWith(Routes.events)) {
       pageTitle = 'Campus Events';
-    } else if (location.startsWith('/groups')) {
+    } else if (location.startsWith(Routes.studyGroups)) {
       pageTitle = 'Study Groups';
-    } else if (location.startsWith('/announcements')) {
+    } else if (location.startsWith(Routes.announcements)) {
       pageTitle = 'Announcements';
-    } else if (location.startsWith('/campus-map')) {
+    } else if (location.startsWith(Routes.campusMap)) {
       pageTitle = 'Campus Map';
-    } else if (location.startsWith('/profile')) {
+    } else if (location.startsWith(Routes.profile)) {
       pageTitle = 'Profile';
     }
 
@@ -161,7 +162,7 @@ class _MainLayoutState extends State<MainLayout> {
     return AppBar(
       backgroundColor: primaryBlue,
       elevation: 0,
-      leading: location == '/' 
+      leading: location == Routes.dashboard 
         ? Padding(
             padding: const EdgeInsets.all(paddingSmall),
             child: Container(
@@ -177,7 +178,7 @@ class _MainLayoutState extends State<MainLayout> {
           )
         : IconButton(
             icon: const Icon(Icons.arrow_back, color: textWhite),
-            onPressed: () => context.go('/'),
+            onPressed: () => context.go(Routes.dashboard),
           ),
       title: Text(
         title,
