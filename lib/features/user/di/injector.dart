@@ -5,6 +5,7 @@ import '../data/datasources/local/auth_local_data_source.dart';
 import '../data/datasources/local/auth_local_data_source_impl.dart';
 import '../data/datasources/remote/auth_remote_data_source.dart';
 import '../data/datasources/remote/auth_remote_data_source_impl.dart';
+import '../data/datasources/remote/firestore_data_source.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/usecases/get_current_user.dart';
@@ -19,9 +20,14 @@ import '../presentation/bloc/auth_bloc.dart';
 /// User Feature Dependency Injection
 Future<void> registerUserDI(GetIt sl) async {
   // Data sources (bottom layer)
+  sl.registerLazySingleton<FirestoreDataSource>(
+    () => FirestoreDataSourceImpl(),
+  );
+
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(
       firebaseAuth: sl.get(),
+      firestoreDataSource: sl.get<FirestoreDataSource>(),
     ),
   );
 

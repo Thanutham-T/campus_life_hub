@@ -3,12 +3,15 @@ import '../../../../../core/core.dart';
 import '../../../domain/entities/profile_entity.dart';
 import '../../models/profile_model.dart';
 import 'auth_remote_data_source.dart';
+import 'firestore_data_source.dart';
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final FirebaseAuth firebaseAuth;
+  final FirestoreDataSource firestoreDataSource;
 
   AuthRemoteDataSourceImpl({
     required this.firebaseAuth,
+    required this.firestoreDataSource,
   });
 
   @override
@@ -57,7 +60,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Update display name in Firebase
       await credential.user!.updateDisplayName('$firstName $lastName');
 
-      return _mapFirebaseUserToProfile(
+      // Create profile model
+      final profile = _mapFirebaseUserToProfile(
         credential.user!,
         firstName: firstName,
         lastName: lastName,
@@ -65,10 +69,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         studentId: studentId,
         department: department,
       );
+
+      // Save profile to Firestore
+      try {
+        await firestoreDataSource.saveUserProfile(profile);
+      } catch (firestoreError) {
+        // If Firestore fails, log the error but don't fail registration
+        print('Firestore save failed: $firestoreError');
+        // You might want to retry or handle this differently
+      }
+
+      return profile;
     } on FirebaseAuthException catch (e) {
       throw ServerFailure(_getFirebaseErrorMessage(e.code));
     } catch (e) {
-      throw const ServerFailure('เกิดข้อผิดพลาดที่ไม่คาดคิด');
+      throw ServerFailure('เกิดข้อผิดพลาดที่ไม่คาดคิด: ${e.toString()}');
     }
   }
 
@@ -91,6 +106,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
+      // Try to get profile from Firestore first
+      final firestoreProfile = await firestoreDataSource.getUserProfile(currentUser.uid);
+      if (firestoreProfile != null) {
+        return firestoreProfile;
+      }
+
+      // Fallback to Firebase Auth if no Firestore data
       return _mapFirebaseUserToProfile(currentUser);
     } catch (e) {
       throw const ServerFailure('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
@@ -116,6 +138,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (profileImageUrl != null) {
         await currentUser.updatePhotoURL(profileImageUrl);
       }
+
+      // Update profile in Firestore
+      final updateData = {
+        'firstName': firstName,
+        'lastName': lastName,
+        'phoneNumber': phoneNumber,
+        'department': department,
+        'profileImageUrl': profileImageUrl,
+        'updatedAt': DateTime.now().toIso8601String(),
+      };
+      await firestoreDataSource.updateUserProfile(currentUser.uid, updateData);
 
       return _mapFirebaseUserToProfile(
         currentUser,
