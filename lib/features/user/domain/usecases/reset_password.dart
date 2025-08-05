@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/core.dart';
+import '../../../../core/core_modules.dart';
 import '../repositories/auth_repository.dart';
 
 class ResetPassword implements UseCase<void, ResetPasswordParams> {
@@ -22,3 +22,4 @@ class ResetPasswordParams extends Equatable {
   @override
   List<Object> get props => [email];
 }
+

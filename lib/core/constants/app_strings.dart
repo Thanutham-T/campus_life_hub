@@ -1,6 +1,7 @@
 class AppStrings {
   static const String appName = 'Campus Life Hub';
-  
+  static const String appDescription = 'Your one-stop solution for campus life management';
+
   // Auth
   static const String login = 'เข้าสู่ระบบ';
   static const String register = 'สร้างบัญชีผู้ใช้ใหม่';

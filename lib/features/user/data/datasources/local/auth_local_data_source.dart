@@ -23,3 +23,4 @@ abstract class AuthLocalDataSource {
   
   Future<void> clearAllData();
 }
+

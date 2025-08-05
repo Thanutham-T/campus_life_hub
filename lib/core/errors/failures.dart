@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// Base failure class
+/// Base failure class for error handling in the app
 abstract class Failure extends Equatable {
   final String message;
   final String? code;
@@ -26,9 +26,29 @@ class CacheFailure extends Failure {
   const CacheFailure(super.message, {super.code});
 }
 
-/// Authentication failure
+/// Authentication failures
 class AuthFailure extends Failure {
   const AuthFailure(super.message, {super.code});
+}
+
+class InvalidCredentialsFailure extends AuthFailure {
+  const InvalidCredentialsFailure() : super('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+}
+
+class UserNotFoundFailure extends AuthFailure {
+  const UserNotFoundFailure() : super('ไม่พบผู้ใช้งาน');
+}
+
+class EmailAlreadyExistsFailure extends AuthFailure {
+  const EmailAlreadyExistsFailure() : super('อีเมลนี้ถูกใช้งานแล้ว');
+}
+
+class WeakPasswordFailure extends AuthFailure {
+  const WeakPasswordFailure() : super('รหัสผ่านไม่ปลอดภัย');
+}
+
+class InvalidEmailFailure extends AuthFailure {
+  const InvalidEmailFailure() : super('รูปแบบอีเมลไม่ถูกต้อง');
 }
 
 /// Validation failure

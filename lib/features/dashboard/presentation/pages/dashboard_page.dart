@@ -1,261 +1,250 @@
-import 'package:campus_life_hub/core/widgets/widgets.dart';
-import 'package:campus_life_hub/core/constants/constants.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_state.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../config/routes/app_routes.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/strings.dart';
+import '../../../../core/constants/dimens.dart';
+import '../../domain/entities/tool_item.dart';
+import '../../../../core/widgets/tool_card.dart';
+import '../../../campus_event/data/repositories/event_repository.dart';
+import '../../../campus_event/domain/entities/event_model.dart';
+import '../../../../core/utils/event_image_helper.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          Fluttertoast.showToast(
-            msg: "ออกจากระบบสำเร็จ",
-            gravity: ToastGravity.TOP,
-          );
-          context.go('/login');
-        } else if (state is AuthError) {
-          Fluttertoast.showToast(
-            msg: state.message,
-            gravity: ToastGravity.TOP,
-          );
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Campus Life Hub'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
-          actions: [
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                final isLoading = state is AuthLoading;
-                return IconButton(
-                  onPressed: isLoading 
-                      ? null 
-                      : () => _showLogoutDialog(context),
-                  icon: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Icon(Icons.logout),
-                  tooltip: 'ออกจากระบบ',
-                );
-              },
-            ),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Campus Events Section
+            _buildEventsSection(context),
+            
+            // Tools Section
+            _buildToolsSection(context),
+            
+            // Add small bottom padding for navigation bar
+            const SizedBox(height: 80),
           ],
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.paddingL),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSizes.spaceL),
-                
-                // Welcome Section
-                AppCard(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.school,
-                        size: AppSizes.iconXL * 2,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(height: AppSizes.spaceM),
-                      Text(
-                        'ยินดีต้อนรับสู่ Campus Life Hub',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSizes.spaceS),
-                      Text(
-                        'ศูนย์กลางการใช้ชีวิตในมหาวิทยาลัย',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.grey600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+      ),
+    );
+  }
+
+  Widget _buildEventsSection(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(AppDimens.marginMedium),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                AppStrings.campusEvents,
+                style: TextStyle(
+                  fontSize: AppDimens.fontXLarge,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.go(Routes.events);
+                },
+                child: const Text(
+                  AppStrings.viewAll,
+                  style: TextStyle(
+                    fontSize: AppDimens.fontMedium,
+                    color: AppColors.primaryBlue,
                   ),
                 ),
-                const SizedBox(height: AppSizes.spaceL),
-
-                // Feature Grid
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.2,
-                  crossAxisSpacing: AppSizes.spaceM,
-                  mainAxisSpacing: AppSizes.spaceM,
-                  children: [
-                    _buildFeatureCard(
-                      context,
-                      'ตารางเรียน',
-                      Icons.schedule,
-                      AppColors.primary,
-                      () => context.push('/schedule'),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: AppDimens.marginMedium),
+          
+          // Event Cards Horizontal Scroll
+          SizedBox(
+            height: 160,
+            child: ScrollConfiguration(
+              behavior: ScrollConfiguration.of(context).copyWith(
+                dragDevices: {
+                  PointerDeviceKind.touch,
+                  PointerDeviceKind.mouse,
+                },
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                physics: const BouncingScrollPhysics(),
+                clipBehavior: Clip.none,
+                itemCount: EventRepository.getAllEvents().length,
+                itemBuilder: (context, index) {
+                  final event = EventRepository.getAllEvents()[index];
+                  return Container(
+                    width: 144, // Increased by 20% (from 120 to 144)
+                    margin: EdgeInsets.only(
+                      left: index == 0 ? 0 : AppDimens.marginMedium,
+                      right: index == EventRepository.getAllEvents().length - 1 ? AppDimens.marginMedium : 0,
                     ),
-                    _buildFeatureCard(
-                      context,
-                      'ประกาศ',
-                      Icons.announcement,
-                      AppColors.secondary,
-                      () => context.push('/announcements'),
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      'กิจกรรม',
-                      Icons.event,
-                      AppColors.info,
-                      () => context.push('/events'),
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      'แผนที่',
-                      Icons.map,
-                      AppColors.warning,
-                      () => context.push('/map'),
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      'กลุ่มศึกษา',
-                      Icons.group,
-                      AppColors.success,
-                      () => context.push('/groups'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSizes.spaceL),
-
-                // Quick Actions
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'การทำงานด่วน',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSizes.spaceM),
-                      AppButton(
-                        text: 'ดูตารางเรียนวันนี้',
-                        type: AppButtonType.outline,
-                        isFullWidth: true,
-                        icon: Icons.today,
-                        onPressed: () => _showComingSoon(context),
-                      ),
-                      const SizedBox(height: AppSizes.spaceS),
-                      AppButton(
-                        text: 'ตรวจสอบประกาศใหม่',
-                        type: AppButtonType.outline,
-                        isFullWidth: true,
-                        icon: Icons.notifications,
-                        onPressed: () => _showComingSoon(context),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                    child: _buildDashboardEventCard(event),
+                  );
+                },
+              ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardEventCard(Event event) {
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () => context.go(Routes.events),
+        child: Card(
+          elevation: AppDimens.cardElevation,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusMedium),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Event Image (75% of total height)
+              Expanded(
+                flex: 75,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppDimens.radiusMedium),
+                  ),
+                  child: EventImageHelper.buildEventImage(
+                    imageUrl: event.imageUrl,
+                    eventId: event.id,
+                    eventTitle: event.title,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              
+              // Event Content (25% of total height)
+              Expanded(
+                flex: 25,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+                  child: Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFeatureCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return AppCard(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: AppSizes.iconL * 1.5,
-            color: color,
-          ),
-          const SizedBox(height: AppSizes.spaceS),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+  Widget _buildToolsSection(BuildContext context) {
+    final tools = [
+      ToolItem(
+        title: AppStrings.schedule,
+        icon: Icons.calendar_today,
+        backgroundColor: Colors.red,
+        onTap: () => context.go(Routes.course),
       ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AppDialog(
-        title: 'เร็วๆ นี้',
-        content: 'ฟีเจอร์นี้จะพร้อมใช้งานเร็วๆ นี้',
-        actions: [
-          AppButton(
-            text: 'ตกลง',
-            type: AppButtonType.primary,
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
+      ToolItem(
+        title: AppStrings.announcements,
+        icon: Icons.campaign,
+        backgroundColor: Colors.orange,
+        onTap: () => context.go(Routes.announcements),
       ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AppDialog(
-        title: 'ออกจากระบบ',
-        content: 'คุณต้องการออกจากระบบหรือไม่?',
-        actions: [
-          AppButton(
-            text: 'ยกเลิก',
-            type: AppButtonType.text,
-            onPressed: () => Navigator.pop(context),
-          ),
-          AppButton(
-            text: 'ออกจากระบบ',
-            type: AppButtonType.danger,
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<AuthBloc>().add(LogoutRequested());
+      ToolItem(
+        title: AppStrings.map,
+        icon: Icons.location_on,
+        backgroundColor: Colors.green,
+        onTap: () => context.go(Routes.campusMap),
+      ),
+      ToolItem(
+        title: 'Profile',
+        icon: Icons.person,
+        backgroundColor: Colors.blue,
+        onTap: () => context.go(Routes.profile),
+      ),
+      ToolItem(
+        title: AppStrings.studyGroups,
+        icon: Icons.groups,
+        backgroundColor: Colors.purple,
+        onTap: () => context.go(Routes.studyGroups),
+      ),
+      ToolItem(
+        title: AppStrings.setting,
+        icon: Icons.settings,
+        backgroundColor: Colors.grey,
+        onTap: () {
+          // Show settings dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Settings'),
+                content: const Text('Settings feature will be implemented soon.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
             },
+          );
+        },
+      ),
+    ];
+
+    return Container(
+      margin: const EdgeInsets.all(AppDimens.marginMedium),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            AppStrings.tools,
+            style: TextStyle(
+              fontSize: AppDimens.fontXLarge,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          
+          const SizedBox(height: AppDimens.marginMedium),
+          
+          GridView.count(
+            crossAxisCount: 3,
+            crossAxisSpacing: 4.0,
+            mainAxisSpacing: 4.0,
+            childAspectRatio: 1.0,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: tools.map((tool) => ToolCard(toolItem: tool)).toList(),
           ),
         ],
       ),
     );
   }
 }
-
-

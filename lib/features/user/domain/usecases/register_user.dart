@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/core.dart';
+import '../../../../core/core_modules.dart';
 import '../entities/profile_entity.dart';
 import '../repositories/auth_repository.dart';
 
@@ -53,3 +53,4 @@ class RegisterParams extends Equatable {
         department,
       ];
 }
+
