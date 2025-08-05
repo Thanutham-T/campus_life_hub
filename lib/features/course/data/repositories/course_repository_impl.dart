@@ -21,8 +21,10 @@ class CourseRepositoryImpl implements CourseRepository {
       return CourseEntity(
         id: course.id,
         code: course.code,
-        name: course.name,
+        nameEn: course.nameEn,
+        nameTh: course.nameTh,
         description: course.description,
+        credit: course.credit,
         sections: course.sections.map((section) => section.copyWith(isEnrolled: true)).toList(),
       );
     }).toList();
@@ -43,8 +45,10 @@ class CourseRepositoryImpl implements CourseRepository {
       return CourseEntity(
         id: course.id,
         code: course.code,
-        name: course.name,
+        nameEn: course.nameEn,
+        nameTh: course.nameTh,
         description: course.description,
+        credit: course.credit,
         sections: course.sections.map((section) {
           final isSectionEnrolled = enrolledCourses.any((enrolledCourse) =>
         enrolledCourse.sections.any((enrolledSection) => enrolledSection.id == section.id)

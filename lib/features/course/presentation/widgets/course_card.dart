@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-
 class CourseCard extends StatefulWidget {
   final String courseCode;
-  final String courseName;
+  final String courseNameEn;
+  final String courseNameTh;
+  final int courseCredit;
   final String courseSection;
-  final List<Schedule> schedules;
+  final List<Schedule> courseSchedules;
   final bool isEnrolled;
   final VoidCallback? onEnrol;
   final VoidCallback? onWithdrawn;
@@ -14,9 +15,11 @@ class CourseCard extends StatefulWidget {
   const CourseCard({
     Key? key,
     required this.courseCode,
-    required this.courseName,
+    required this.courseNameEn,
+    required this.courseNameTh,
+    required this.courseCredit,
     required this.courseSection,
-    required this.schedules,
+    required this.courseSchedules,
     required this.isEnrolled,
     this.onEnrol,
     this.onWithdrawn,
@@ -73,25 +76,41 @@ class _CourseCardState extends State<CourseCard> {
         child: Column(
           children: [
             ListTile(
-              title: Row(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Flexible(
-                    child: Text(
-                      widget.courseCode,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.courseCode,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          ' - ${widget.courseNameEn}',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[600]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                  Flexible(
-                    child: Text(
-                      ' - ${widget.courseName}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Text(
+                    widget.courseNameTh,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    'Credit: ${widget.courseCredit}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -100,9 +119,9 @@ class _CourseCardState extends State<CourseCard> {
                 children: [
                   Text(
                     'Section: ${widget.courseSection}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -113,9 +132,12 @@ class _CourseCardState extends State<CourseCard> {
             ),
             if (_expanded)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Column(
-                  children: widget.schedules.map((schedule) {
+                  children: widget.courseSchedules.map((schedule) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
@@ -128,15 +150,13 @@ class _CourseCardState extends State<CourseCard> {
                           ),
                           Text(
                             schedule.room ?? 'N/A',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey[600]),
                           ),
                           Text(
                             schedule.instructor,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),

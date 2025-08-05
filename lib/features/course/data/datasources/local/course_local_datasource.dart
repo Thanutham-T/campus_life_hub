@@ -14,8 +14,10 @@ class FakeCourseDataSource implements CourseDataSource {
     CourseModel(
       id: 'C001',
       code: 'CS101',
-      name: 'Introduction to Flutter',
+      nameEn: 'Introduction to Flutter',
+      nameTh: 'การแนะนำ Flutter',
       description: 'Learn Flutter basics.',
+      credit: 3,
       semester: '1/2569',
       sections: [
         CourseSectionModel(
@@ -42,8 +44,10 @@ class FakeCourseDataSource implements CourseDataSource {
     CourseModel(
       id: 'C002',
       code: 'CS102',
-      name: 'Advanced Flutter',
+      nameEn: 'Advanced Flutter',
+      nameTh: 'Flutter ขั้นสูง',
       description: 'Deep dive into Flutter.',
+      credit: 3,
       semester: '1/2569',
       sections: [
         CourseSectionModel(
@@ -110,8 +114,10 @@ class FakeCourseDataSource implements CourseDataSource {
       return CourseModel(
         id: course.id,
         code: course.code,
-        name: course.name,
+        nameEn: course.nameEn,
+        nameTh: course.nameTh,
         description: course.description,
+        credit: course.credit,
         semester: course.semester,
         sections: enrolledSections,
       );

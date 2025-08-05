@@ -96,7 +96,7 @@ class CoursePage extends StatelessWidget {
                               horizontal: 16.0,
                             ),
                             child: Text(
-                              '${course.code} - ${course.name}',
+                              '${course.code} - ${course.nameEn}s',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -106,9 +106,11 @@ class CoursePage extends StatelessWidget {
                           ...course.sections.map(
                             (section) => CourseCard(
                               courseCode: course.code,
-                              courseName: course.name,
+                              courseNameEn: course.nameEn,
+                              courseNameTh: course.nameTh,
+                              courseCredit: course.credit,
                               courseSection: section.sectionCode,
-                              schedules: section.schedules
+                              courseSchedules: section.schedules
                                   .map(
                                     (s) => Schedule(
                                       day: s.dayOfWeek,

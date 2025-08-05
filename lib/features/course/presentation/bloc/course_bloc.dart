@@ -10,7 +10,6 @@ import 'package:campus_life_hub/features/course/domain/usecases/get_courses_with
 import 'course_event.dart';
 import 'course_state.dart';
 
-
 class CourseBloc extends Bloc<CourseEvent, CourseState> {
   final GetCourseFromSemester getCourseFromSemester;
   final GetCourseDetail getCourseDetail;
@@ -49,27 +48,31 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     on<SearchCourses>((event, emit) async {
       final currentState = state;
       if (currentState is CourseLoaded) {
-      emit(CourseLoading());
-      try {
-        final query = event.query.trim().toLowerCase();
-        if (query.isEmpty) {
-          if (currentState.isEnrolledView) {
-            final courses = await getEnrolledCourses('1');
-            emit(CourseLoaded(courses, isEnrolledView: true));
+        emit(CourseLoading());
+        try {
+          final query = event.query.trim().toLowerCase();
+          if (query.isEmpty) {
+            if (currentState.isEnrolledView) {
+              final courses = await getEnrolledCourses('1');
+              emit(CourseLoaded(courses, isEnrolledView: true));
+            } else {
+              final courses = await getCourseWithEnrollStatus('1');
+              emit(CourseLoaded(courses, isEnrolledView: false));
+            }
           } else {
-            final courses = await getCourseWithEnrollStatus('1');
-            emit(CourseLoaded(courses, isEnrolledView: false));
+            final filteredCourses = currentState.courses.where((course) {
+              return course.nameEn.toLowerCase().contains(query) || course.nameTh.toLowerCase().contains(query) || course.code.toLowerCase().contains(query);
+            }).toList();
+            emit(
+              CourseLoaded(
+                filteredCourses,
+                isEnrolledView: currentState.isEnrolledView,
+              ),
+            );
           }
-        } else {
-        final filteredCourses = currentState.courses.where((course) {
-          return course.name.toLowerCase().contains(query) ||
-            course.code.toLowerCase().contains(query);
-        }).toList();
-        emit(CourseLoaded(filteredCourses, isEnrolledView: currentState.isEnrolledView));
+        } catch (e) {
+          emit(CourseError(e.toString()));
         }
-      } catch (e) {
-        emit(CourseError(e.toString()));
-      }
       }
     });
 
@@ -96,7 +99,7 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
         emit(CourseError(e.toString()));
       }
     });
-    
+
     on<LoadCourseWithEnrollStatus>((event, emit) async {
       emit(CourseLoading());
       try {
