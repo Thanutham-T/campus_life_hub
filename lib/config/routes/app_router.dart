@@ -17,12 +17,9 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: Routes.home,
+  initialLocation: Routes.splash,
   routes: [
-    // Splash route (without layout)
-    GoRoute(path: Routes.home, name: 'splash', builder: (context, state) => const SplashPage()),
-    
-    // Routes without MainLayout (Login, Register)
+    GoRoute(path: Routes.splash, name: 'splash', builder: (context, state) => const SplashPage()),
     GoRoute(path: Routes.login, name: 'login', builder: (context, state) => const LoginPage()),
     GoRoute(path: Routes.register, name: 'register', builder: (context, state) => const RegisterPage()),
     

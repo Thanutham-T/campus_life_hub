@@ -1,5 +1,8 @@
+import 'package:campus_life_hub/features/splash/presentation/pages/splash_page.dart';
+
 abstract final class Routes {
   static const home = '/';
+  static const splash = '/splash';
   static const login = '/login';
   static const register = '/register';
   static const dashboard = '/dashboard';
