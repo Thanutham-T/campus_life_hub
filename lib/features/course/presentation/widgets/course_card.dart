@@ -7,7 +7,7 @@ class CourseCard extends StatefulWidget {
   final String courseName;
   final String courseSection;
   final List<Schedule> schedules;
-  final bool isRegistered;
+  final bool isEnrolled;
   final VoidCallback? onEnrol;
   final VoidCallback? onWithdrawn;
 
@@ -17,7 +17,7 @@ class CourseCard extends StatefulWidget {
     required this.courseName,
     required this.courseSection,
     required this.schedules,
-    required this.isRegistered,
+    required this.isEnrolled,
     this.onEnrol,
     this.onWithdrawn,
   }) : super(key: key);
@@ -52,16 +52,16 @@ class _CourseCardState extends State<CourseCard> {
         children: [
           SlidableAction(
             onPressed: (context) {
-              if (widget.isRegistered) {
+              if (widget.isEnrolled) {
                 widget.onWithdrawn?.call();
               } else {
                 widget.onEnrol?.call();
               }
             },
-            backgroundColor: widget.isRegistered ? Colors.red : Colors.green,
+            backgroundColor: widget.isEnrolled ? Colors.red : Colors.green,
             foregroundColor: Colors.white,
-            icon: widget.isRegistered ? Icons.logout : Icons.login,
-            label: widget.isRegistered ? 'Withdrawn' : 'Enrol',
+            icon: widget.isEnrolled ? Icons.logout : Icons.login,
+            label: widget.isEnrolled ? 'Withdrawn' : 'Enrol',
           ),
         ],
       ),
@@ -69,7 +69,7 @@ class _CourseCardState extends State<CourseCard> {
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: widget.isRegistered ? Colors.yellow[100] : null,
+        color: widget.isEnrolled ? Colors.yellow[100] : null,
         child: Column(
           children: [
             ListTile(

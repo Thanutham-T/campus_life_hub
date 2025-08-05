@@ -35,7 +35,7 @@ class RouteBuilders {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return BlocProvider.value(
-            value: snapshot.data!..add(LoadAllCourses('1/2569')),
+            value: snapshot.data!..add(LoadCourseWithEnrollStatus('1')),
             child: const CoursePage(),
           );
         } else {
