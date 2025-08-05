@@ -1,4 +1,3 @@
-import 'package:campus_life_hub/core/errors/failures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/core_modules.dart';
 import '../../domain/entities/profile_entity.dart';
