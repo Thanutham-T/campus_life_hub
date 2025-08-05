@@ -5,6 +5,11 @@ class LoadAllCourses extends CourseEvent {
   LoadAllCourses(this.semester);
 }
 
+class LoadCourseWithEnrollStatus extends CourseEvent {
+  final String userId;
+  LoadCourseWithEnrollStatus(this.userId);
+}
+
 class LoadEnrolledCourses extends CourseEvent {
   final String userId;
   LoadEnrolledCourses(this.userId);
@@ -15,9 +20,9 @@ class SearchCourses extends CourseEvent {
   SearchCourses(this.query);
 }
 
-class EnrolToCourse extends CourseEvent {
+class EnrollToCourse extends CourseEvent {
   final String sectionId;
-  EnrolToCourse(this.sectionId);
+  EnrollToCourse(this.sectionId);
 }
 
 class WithdrawFromCourse extends CourseEvent {

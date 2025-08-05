@@ -3,9 +3,8 @@ import '../../models/course_model.dart';
 
 abstract class CourseDataSource {
   Future<List<CourseModel>> fetchCoursesFromSemester(String semester);
-  Future<List<CourseModel>> fetchCourseByCodeOrName(String query);
   Future<CourseModel> fetchCourseDetail(String courseId);
-  Future<void> enrolToSection(String sectionId);
+  Future<void> enrollToSection(String sectionId);
   Future<List<CourseModel>> fetchEnrolledCourses(String userId);
   Future<void> withdrawFromSection(String sectionId);
 }
@@ -90,16 +89,11 @@ class FakeCourseDataSource implements CourseDataSource {
       _mockCourses.where((course) => course.semester == semester).toList();
 
   @override
-  Future<List<CourseModel>> fetchCourseByCodeOrName(String query) async {
-    return _mockCourses.where((course) => course.code.contains(query) || course.name.contains(query)).toList();
-  }
-
-  @override
   Future<CourseModel> fetchCourseDetail(String courseId) async =>
       _mockCourses.firstWhere((c) => c.id == courseId);
 
   @override
-  Future<void> enrolToSection(String sectionId) async {
+  Future<void> enrollToSection(String sectionId) async {
     _registeredSectionIds.add(sectionId);
     print('Enrolled in section: $sectionId');
   }

@@ -36,7 +36,12 @@ class CoursePage extends StatelessWidget {
                     isExpanded: true,
                     hint: const Text('Filter by'),
                     value: context.select(
-                      (CourseBloc bloc) => bloc.state is CourseLoaded && (bloc.state as CourseLoaded).isEnrolledView == true ? true : false,
+                      (CourseBloc bloc) =>
+                          bloc.state is CourseLoaded &&
+                              (bloc.state as CourseLoaded).isEnrolledView ==
+                                  true
+                          ? true
+                          : false,
                     ),
                     items: const [
                       DropdownMenuItem(
@@ -55,7 +60,7 @@ class CoursePage extends StatelessWidget {
                         );
                       } else {
                         context.read<CourseBloc>().add(
-                          LoadAllCourses('1/2569'),
+                          LoadCourseWithEnrollStatus('1'),
                         );
                       }
                     },
@@ -113,17 +118,27 @@ class CoursePage extends StatelessWidget {
                                     ),
                                   )
                                   .toList(),
-                              isRegistered: state.isEnrolledView,
-                              onEnrol: () {
-                                context.read<CourseBloc>().add(
-                                  EnrolToCourse(section.id),
-                                );
-                              },
-                              onWithdrawn: () {
-                                context.read<CourseBloc>().add(
-                                  WithdrawFromCourse(section.id),
-                                );
-                              },
+                              isEnrolled: section.isEnrolled,
+                                onEnrol: course.sections.any((s) => s.isEnrolled)
+                                  ? () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('You can enroll just one section.'),
+                                      ),
+                                    );
+                                  }
+                                  : () {
+                                    context.read<CourseBloc>().add(
+                                    EnrollToCourse(section.id),
+                                    );
+                                  },
+                              onWithdrawn: section.isEnrolled
+                                  ? () {
+                                      context.read<CourseBloc>().add(
+                                        WithdrawFromCourse(section.id),
+                                      );
+                                    }
+                                  : null,
                             ),
                           ),
                           const Divider(),
