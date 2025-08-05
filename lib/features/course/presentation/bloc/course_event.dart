@@ -1,6 +1,3 @@
-import 'package:campus_life_hub/features/course/domain/entities/course_section.dart';
-
-
 abstract class CourseEvent {}
 
 class LoadAllCourses extends CourseEvent {

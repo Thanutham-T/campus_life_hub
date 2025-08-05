@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../di/injector.dart';
 
-import '../../features/schedule/presentation/pages/schedule_page.dart';
-import '../../features/schedule/presentation/bloc/schedule_event.dart';
-import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
+// import '../../features/schedule/presentation/pages/schedule_page.dart';
+// import '../../features/schedule/presentation/bloc/schedule_event.dart';
+// import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
 
 import '../../features/course/presentation/pages/course_page.dart';
 import '../../features/course/presentation/bloc/course_bloc.dart';
