@@ -141,13 +141,6 @@ class DashboardPage extends StatelessWidget {
                       AppColors.success,
                       () => context.push('/groups'),
                     ),
-                    _buildFeatureCard(
-                      context,
-                      'โปรไฟล์',
-                      Icons.person,
-                      AppColors.grey600,
-                      () => context.push('/profile'),
-                    ),
                   ],
                 ),
                 const SizedBox(height: AppSizes.spaceL),
