@@ -90,7 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
             context.go('/login');
           } else if (state is RegisterFailure) {
             Fluttertoast.showToast(
-              msg: state.message,
+              msg: state.message.isNotEmpty ? state.message : "เกิดข้อผิดพลาดในการสร้างบัญชี",
               gravity: ToastGravity.TOP,
             );
           }
