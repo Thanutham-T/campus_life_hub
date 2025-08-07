@@ -106,6 +106,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         phoneNumber: event.phoneNumber,
         studentId: event.studentId,
         department: event.department,
+        educationLevel: event.educationLevel,
+        campus: event.campus,
+        faculty: event.faculty,
+        major: event.major,
+        curriculum: event.curriculum,
       ),
     );
     

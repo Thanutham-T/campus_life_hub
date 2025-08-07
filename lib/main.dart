@@ -6,7 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'config/routes/app_router.dart' hide Scaffold;
+import 'config/routes/app_router.dart';
 import 'config/routes/app_routes.dart';
 import 'config/di/injector.dart' as di;
 import 'features/user/presentation/bloc/auth_bloc.dart';
