@@ -36,18 +36,28 @@ class RegisterRequested extends AuthEvent {
   final String password;
   final String firstName;
   final String lastName;
-  final String? phoneNumber;
-  final String? studentId;
-  final String? department;
+  final String phoneNumber;
+  final String studentId;
+  final String department;
+  final String educationLevel; // ระดับการศึกษา
+  final String campus; // วิทยาเขต
+  final String faculty; // คณะ
+  final String major; // สาขาวิชา
+  final String curriculum; // หลักสูตร
 
   const RegisterRequested({
     required this.email,
     required this.password,
     required this.firstName,
     required this.lastName,
-    this.phoneNumber,
-    this.studentId,
-    this.department,
+    required this.phoneNumber,
+    required this.studentId,
+    required this.department,
+    required this.educationLevel,
+    required this.campus,
+    required this.faculty,
+    required this.major,
+    required this.curriculum,
   });
 
   @override
@@ -59,6 +69,11 @@ class RegisterRequested extends AuthEvent {
         phoneNumber,
         studentId,
         department,
+        educationLevel,
+        campus,
+        faculty,
+        major,
+        curriculum,
       ];
 }
 
