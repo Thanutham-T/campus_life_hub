@@ -20,6 +20,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
+      print('🔐 AuthRemoteDataSource: Logging in user: $email');
+      
       final credential = await firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -29,7 +31,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const ServerFailure('การเข้าสู่ระบบล้มเหลว');
       }
 
-      return _mapFirebaseUserToProfile(credential.user!);
+      final user = credential.user!;
+      print('✅ AuthRemoteDataSource: Firebase login successful for user: ${user.uid}');
+
+      // ดึงข้อมูลจาก Firestore
+      final profile = await firestoreDataSource.getUserProfile(user.uid);
+      
+      if (profile != null) {
+        print('✅ AuthRemoteDataSource: Profile loaded from Firestore');
+        return profile;
+      }
+
+      print('⚠️ AuthRemoteDataSource: No profile found in Firestore, creating basic profile');
+      throw const ServerFailure('ไม่พบข้อมูลโปรไฟล์ในระบบ');
     } on FirebaseAuthException catch (e) {
       throw ServerFailure(_getFirebaseErrorMessage(e.code));
     } catch (e) {
@@ -43,11 +57,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
     required String firstName,
     required String lastName,
-    String? phoneNumber,
-    String? studentId,
-    String? department,
+    required String phoneNumber,
+    required String studentId,
+    required String department,
+    required String educationLevel,
+    required String campus,
+    required String faculty,
+    required String major,
+    required String curriculum,
   }) async {
     try {
+      print('📝 AuthRemoteDataSource: Registering new user: $email');
+      
       final credential = await firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -57,27 +78,41 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const ServerFailure('การสร้างบัญชีล้มเหลว');
       }
 
-      // Update display name in Firebase
-      await credential.user!.updateDisplayName('$firstName $lastName');
+      final user = credential.user!;
+      print('✅ AuthRemoteDataSource: Firebase Auth account created: ${user.uid}');
 
-      // Create profile model
-      final profile = _mapFirebaseUserToProfile(
-        credential.user!,
+      // Update display name in Firebase
+      await user.updateDisplayName('$firstName $lastName');
+
+      // Create profile model with all registration data
+      final profile = ProfileModel(
+        id: user.uid,
+        email: email,
         firstName: firstName,
         lastName: lastName,
         phoneNumber: phoneNumber,
-        studentId: studentId,
+        profileImageUrl: null,
         department: department,
+        studentId: studentId,
+        educationLevel: educationLevel,
+        campus: campus,
+        faculty: faculty,
+        major: major,
+        curriculum: curriculum,
+        role: UserRole.student,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
-      // Save profile to Firestore
-      try {
-        await firestoreDataSource.saveUserProfile(profile);
-      } catch (firestoreError) {
-        // If Firestore fails, log the error but don't fail registration
-        print('Firestore save failed: $firestoreError');
-        // You might want to retry or handle this differently
-      }
+      print('💾 AuthRemoteDataSource: Saving profile to Firestore...');
+      print('   - Name: $firstName $lastName');
+      print('   - Student ID: $studentId');
+      print('   - Faculty: $faculty');
+      print('   - Major: $major');
+
+      // Save complete profile to Firestore
+      await firestoreDataSource.saveUserProfile(profile);
+      print('✅ AuthRemoteDataSource: Profile saved to Firestore successfully');
 
       return profile;
     } on FirebaseAuthException catch (e) {
@@ -90,10 +125,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> logout() async {
     try {
+      print('👋 AuthRemoteDataSource: Logging out user');
       await firebaseAuth.signOut();
+      print('✅ AuthRemoteDataSource: Logout successful');
     } on FirebaseAuthException catch (e) {
+      print('❌ AuthRemoteDataSource: Logout error: ${e.code}');
       throw ServerFailure(_getFirebaseErrorMessage(e.code));
     } catch (e) {
+      print('❌ AuthRemoteDataSource: Unexpected logout error: $e');
       throw const ServerFailure('เกิดข้อผิดพลาดในการออกจากระบบ');
     }
   }
@@ -106,15 +145,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
-      // Try to get profile from Firestore first
-      final firestoreProfile = await firestoreDataSource.getUserProfile(currentUser.uid);
-      if (firestoreProfile != null) {
-        return firestoreProfile;
+      print('🔍 AuthRemoteDataSource: Getting current user profile');
+      print('   - User ID: ${currentUser.uid}');
+      print('   - Email: ${currentUser.email}');
+      
+      // ดึงข้อมูลจาก Firestore เท่านั้น
+      final profile = await firestoreDataSource.getUserProfile(currentUser.uid);
+      
+      if (profile != null) {
+        print('✅ AuthRemoteDataSource: Profile loaded from Firestore');
+        print('   - Name: ${profile.firstName} ${profile.lastName}');
+        print('   - Student ID: ${profile.studentId}');
+        print('   - Faculty: ${profile.faculty}');
+        return profile;
       }
 
-      // Fallback to Firebase Auth if no Firestore data
-      return _mapFirebaseUserToProfile(currentUser);
+      print('❌ AuthRemoteDataSource: No profile found in Firestore');
+      throw const ServerFailure('ไม่พบข้อมูลโปรไฟล์ในระบบ กรุณาติดต่อผู้ดูแลระบบ');
     } catch (e) {
+      print('AuthRemoteDataSource: Error in getCurrentUser: $e');
       throw const ServerFailure('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
     }
   }
@@ -133,31 +182,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const ServerFailure('ไม่พบผู้ใช้ที่เข้าสู่ระบบ');
       }
 
-      // Update display name and photo URL in Firebase
+      print('🔄 AuthRemoteDataSource: Updating profile for user: ${currentUser.uid}');
+
+      // Update display name in Firebase
       await currentUser.updateDisplayName('$firstName $lastName');
       if (profileImageUrl != null) {
         await currentUser.updatePhotoURL(profileImageUrl);
       }
 
       // Update profile in Firestore
-      final updateData = {
+      final updateData = <String, dynamic>{
         'firstName': firstName,
         'lastName': lastName,
-        'phoneNumber': phoneNumber,
-        'department': department,
-        'profileImageUrl': profileImageUrl,
         'updatedAt': DateTime.now().toIso8601String(),
       };
-      await firestoreDataSource.updateUserProfile(currentUser.uid, updateData);
 
-      return _mapFirebaseUserToProfile(
-        currentUser,
-        firstName: firstName,
-        lastName: lastName,
-        phoneNumber: phoneNumber,
-        department: department,
-        profileImageUrl: profileImageUrl,
-      );
+      if (phoneNumber != null) updateData['phoneNumber'] = phoneNumber;
+      if (department != null) updateData['department'] = department;
+      if (profileImageUrl != null) updateData['profileImageUrl'] = profileImageUrl;
+
+      await firestoreDataSource.updateUserProfile(currentUser.uid, updateData);
+      print('✅ AuthRemoteDataSource: Profile updated in Firestore');
+
+      // ดึงข้อมูลล่าสุดจาก Firestore
+      final updatedProfile = await firestoreDataSource.getUserProfile(currentUser.uid);
+      if (updatedProfile == null) {
+        throw const ServerFailure('ไม่สามารถดึงข้อมูลที่อัปเดตได้');
+      }
+
+      return updatedProfile;
     } on FirebaseAuthException catch (e) {
       throw ServerFailure(_getFirebaseErrorMessage(e.code));
     } catch (e) {
@@ -239,37 +292,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       throw const ServerFailure('เกิดข้อผิดพลาดในการรีเฟรชโทเค็น');
     }
-  }
-
-  // Helper method to map Firebase User to ProfileModel
-  ProfileModel _mapFirebaseUserToProfile(
-    User user, {
-    String? firstName,
-    String? lastName,
-    String? phoneNumber,
-    String? studentId,
-    String? department,
-    String? profileImageUrl,
-  }) {
-    // Split display name if available
-    final displayName = user.displayName ?? '';
-    final nameParts = displayName.split(' ');
-    final defaultFirstName = nameParts.isNotEmpty ? nameParts.first : '';
-    final defaultLastName = nameParts.length > 1 ? nameParts.skip(1).join(' ') : '';
-
-    return ProfileModel(
-      id: user.uid,
-      email: user.email ?? '',
-      firstName: firstName ?? defaultFirstName,
-      lastName: lastName ?? defaultLastName,
-      phoneNumber: phoneNumber ?? user.phoneNumber,
-      profileImageUrl: profileImageUrl ?? user.photoURL,
-      department: department,
-      studentId: studentId,
-      role: UserRole.student, // Default role
-      createdAt: user.metadata.creationTime ?? DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
   }
 
   String _getFirebaseErrorMessage(String errorCode) {

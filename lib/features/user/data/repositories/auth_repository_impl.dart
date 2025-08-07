@@ -42,9 +42,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String firstName,
     required String lastName,
-    String? phoneNumber,
-    String? studentId,
-    String? department,
+    required String phoneNumber,
+    required String studentId,
+    required String department,
+    required String educationLevel,
+    required String campus,
+    required String faculty,
+    required String major,
+    required String curriculum,
   }) async {
     try {
       final profileModel = await remoteDataSource.register(
@@ -55,6 +60,11 @@ class AuthRepositoryImpl implements AuthRepository {
         phoneNumber: phoneNumber,
         studentId: studentId,
         department: department,
+        educationLevel: educationLevel,
+        campus: campus,
+        faculty: faculty,
+        major: major,
+        curriculum: curriculum,
       );
       
       // Cache the user data locally
