@@ -5,10 +5,15 @@ class ProfileEntity extends Equatable {
   final String email;
   final String firstName;
   final String lastName;
-  final String? phoneNumber;
+  final String phoneNumber;
   final String? profileImageUrl;
-  final String? department;
-  final String? studentId;
+  final String department;
+  final String studentId;
+  final String educationLevel; // ระดับการศึกษา
+  final String campus; // วิทยาเขต
+  final String faculty; // คณะ
+  final String major; // สาขาวิชา
+  final String curriculum; // หลักสูตร
   final UserRole role;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -18,10 +23,15 @@ class ProfileEntity extends Equatable {
     required this.email,
     required this.firstName,
     required this.lastName,
-    this.phoneNumber,
+    required this.phoneNumber,
     this.profileImageUrl,
-    this.department,
-    this.studentId,
+    required this.department,
+    required this.studentId,
+    required this.educationLevel,
+    required this.campus,
+    required this.faculty,
+    required this.major,
+    required this.curriculum,
     required this.role,
     required this.createdAt,
     required this.updatedAt,
@@ -46,6 +56,11 @@ class ProfileEntity extends Equatable {
     String? profileImageUrl,
     String? department,
     String? studentId,
+    String? educationLevel,
+    String? campus,
+    String? faculty,
+    String? major,
+    String? curriculum,
     UserRole? role,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -59,6 +74,11 @@ class ProfileEntity extends Equatable {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       department: department ?? this.department,
       studentId: studentId ?? this.studentId,
+      educationLevel: educationLevel ?? this.educationLevel,
+      campus: campus ?? this.campus,
+      faculty: faculty ?? this.faculty,
+      major: major ?? this.major,
+      curriculum: curriculum ?? this.curriculum,
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -75,6 +95,11 @@ class ProfileEntity extends Equatable {
         profileImageUrl,
         department,
         studentId,
+        educationLevel,
+        campus,
+        faculty,
+        major,
+        curriculum,
         role,
         createdAt,
         updatedAt,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../config/routes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/strings.dart';
 import '../../../../core/constants/dimens.dart';
@@ -54,7 +55,7 @@ class DashboardPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  context.go('/events');
+                  context.go(Routes.events);
                 },
                 child: const Text(
                   AppStrings.viewAll,
@@ -107,7 +108,7 @@ class DashboardPage extends StatelessWidget {
   Widget _buildDashboardEventCard(Event event) {
     return Builder(
       builder: (context) => GestureDetector(
-        onTap: () => context.go('/events'),
+        onTap: () => context.go(Routes.events),
         child: Card(
           elevation: AppDimens.cardElevation,
           shape: RoundedRectangleBorder(
@@ -166,31 +167,31 @@ class DashboardPage extends StatelessWidget {
         title: AppStrings.schedule,
         icon: Icons.calendar_today,
         backgroundColor: Colors.red,
-        onTap: () => context.go('/schedule'),
+        onTap: () => context.go(Routes.course),
       ),
       ToolItem(
         title: AppStrings.announcements,
         icon: Icons.campaign,
         backgroundColor: Colors.orange,
-        onTap: () => context.go('/announcements'),
+        onTap: () => context.go(Routes.announcements),
       ),
       ToolItem(
         title: AppStrings.map,
         icon: Icons.location_on,
         backgroundColor: Colors.green,
-        onTap: () => context.go('/campus-map'),
+        onTap: () => context.go(Routes.campusMap),
       ),
       ToolItem(
         title: 'Profile',
         icon: Icons.person,
         backgroundColor: Colors.blue,
-        onTap: () => context.go('/profile'),
+        onTap: () => context.go(Routes.profile),
       ),
       ToolItem(
         title: AppStrings.studyGroups,
         icon: Icons.groups,
         backgroundColor: Colors.purple,
-        onTap: () => context.go('/groups'),
+        onTap: () => context.go(Routes.studyGroups),
       ),
       ToolItem(
         title: AppStrings.setting,

@@ -19,6 +19,11 @@ class RegisterUser implements UseCase<ProfileEntity, RegisterParams> {
       phoneNumber: params.phoneNumber,
       studentId: params.studentId,
       department: params.department,
+      educationLevel: params.educationLevel,
+      campus: params.campus,
+      faculty: params.faculty,
+      major: params.major,
+      curriculum: params.curriculum,
     );
   }
 }
@@ -28,18 +33,28 @@ class RegisterParams extends Equatable {
   final String password;
   final String firstName;
   final String lastName;
-  final String? phoneNumber;
-  final String? studentId;
-  final String? department;
+  final String phoneNumber;
+  final String studentId;
+  final String department;
+  final String educationLevel;
+  final String campus;
+  final String faculty;
+  final String major;
+  final String curriculum;
 
   const RegisterParams({
     required this.email,
     required this.password,
     required this.firstName,
     required this.lastName,
-    this.phoneNumber,
-    this.studentId,
-    this.department,
+    required this.phoneNumber,
+    required this.studentId,
+    required this.department,
+    required this.educationLevel,
+    required this.campus,
+    required this.faculty,
+    required this.major,
+    required this.curriculum,
   });
 
   @override
@@ -51,6 +66,11 @@ class RegisterParams extends Equatable {
         phoneNumber,
         studentId,
         department,
+        educationLevel,
+        campus,
+        faculty,
+        major,
+        curriculum,
       ];
 }
 

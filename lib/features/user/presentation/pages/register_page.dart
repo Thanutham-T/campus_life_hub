@@ -1,4 +1,5 @@
 import 'package:campus_life_hub/core/constants/constants.dart';
+import 'package:campus_life_hub/config/routes/app_routes.dart';
 import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
 import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
 import 'package:campus_life_hub/features/user/presentation/bloc/auth_state.dart';
@@ -27,6 +28,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneController = TextEditingController();
   final _studentIdController = TextEditingController();
   final _departmentController = TextEditingController();
+  final _educationLevelController = TextEditingController();
+  final _campusController = TextEditingController();
+  final _facultyController = TextEditingController();
+  final _majorController = TextEditingController();
+  final _curriculumController = TextEditingController();
 
   @override
   void dispose() {
@@ -38,7 +44,23 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneController.dispose();
     _studentIdController.dispose();
     _departmentController.dispose();
+    _educationLevelController.dispose();
+    _campusController.dispose();
+    _facultyController.dispose();
+    _majorController.dispose();
+    _curriculumController.dispose();
     super.dispose();
+  }
+
+  void _fillSampleData() {
+    _studentIdController.text = '6510110321';
+    _educationLevelController.text = 'master degree';
+    _campusController.text = 'hatyai';
+    _facultyController.text = 'engineering';
+    _majorController.text = 'computer engineer';
+    _curriculumController.text = 'international program';
+    _departmentController.text = 'computer engineering';
+    _phoneController.text = '0812345678';
   }
 
   void _submit() {
@@ -58,14 +80,29 @@ class _RegisterPageState extends State<RegisterPage> {
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           phoneNumber: _phoneController.text.trim().isEmpty 
-              ? null 
+              ? 'ไม่ระบุ' 
               : _phoneController.text.trim(),
           studentId: _studentIdController.text.trim().isEmpty 
-              ? null 
+              ? 'ไม่ระบุ' 
               : _studentIdController.text.trim(),
           department: _departmentController.text.trim().isEmpty 
-              ? null 
+              ? 'ไม่ระบุ' 
               : _departmentController.text.trim(),
+          educationLevel: _educationLevelController.text.trim().isEmpty 
+              ? 'ไม่ระบุ' 
+              : _educationLevelController.text.trim(),
+          campus: _campusController.text.trim().isEmpty 
+              ? 'ไม่ระบุ' 
+              : _campusController.text.trim(),
+          faculty: _facultyController.text.trim().isEmpty 
+              ? 'ไม่ระบุ' 
+              : _facultyController.text.trim(),
+          major: _majorController.text.trim().isEmpty 
+              ? 'ไม่ระบุ' 
+              : _majorController.text.trim(),
+          curriculum: _curriculumController.text.trim().isEmpty 
+              ? 'ไม่ระบุ' 
+              : _curriculumController.text.trim(),
         ),
       );
     }
@@ -88,10 +125,10 @@ class _RegisterPageState extends State<RegisterPage> {
               msg: "สร้างบัญชีผู้ใช้สำเร็จ",
               gravity: ToastGravity.TOP,
             );
-            context.go('/login');
+            context.go(Routes.login);
           } else if (state is RegisterFailure) {
             Fluttertoast.showToast(
-              msg: state.message,
+              msg: state.message.isNotEmpty ? state.message : "เกิดข้อผิดพลาดในการสร้างบัญชี",
               gravity: ToastGravity.TOP,
             );
           }
@@ -178,24 +215,76 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'ข้อมูลการศึกษา (ไม่บังคับ)',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'ข้อมูลการศึกษา (ไม่บังคับ)',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _fillSampleData,
+                              child: Text(
+                                'ใส่ข้อมูลตัวอย่าง',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: AppSizes.spaceM),
                         AppTextField(
                           controller: _studentIdController,
                           label: 'รหัสนักศึกษา',
                           prefixIcon: Icons.badge,
+                          hint: 'เช่น 6510110321',
+                        ),
+                        const SizedBox(height: AppSizes.spaceM),
+                        AppTextField(
+                          controller: _educationLevelController,
+                          label: 'ระดับการศึกษา',
+                          prefixIcon: Icons.school,
+                          hint: 'เช่น ปริญญาตรี, ปริญญาโท, ปริญญาเอก',
+                        ),
+                        const SizedBox(height: AppSizes.spaceM),
+                        AppTextField(
+                          controller: _campusController,
+                          label: 'วิทยาเขต',
+                          prefixIcon: Icons.location_city,
+                          hint: 'เช่น วิทยาเขตบางมด, วิทยาเขตกำแพงแสน',
+                        ),
+                        const SizedBox(height: AppSizes.spaceM),
+                        AppTextField(
+                          controller: _facultyController,
+                          label: 'คณะ',
+                          prefixIcon: Icons.account_balance,
+                          hint: 'เช่น คณะวิทยาศาสตร์, คณะวิศวกรรมศาสตร์',
+                        ),
+                        const SizedBox(height: AppSizes.spaceM),
+                        AppTextField(
+                          controller: _majorController,
+                          label: 'สาขาวิชา',
+                          prefixIcon: Icons.book,
+                          hint: 'เช่น วิทยาการคอมพิวเตอร์, วิศวกรรมคอมพิวเตอร์',
+                        ),
+                        const SizedBox(height: AppSizes.spaceM),
+                        AppTextField(
+                          controller: _curriculumController,
+                          label: 'หลักสูตร',
+                          prefixIcon: Icons.description,
+                          hint: 'เช่น หลักสูตรปกติ 4 ปี, หลักสูตรนานาชาติ',
                         ),
                         const SizedBox(height: AppSizes.spaceM),
                         AppTextField(
                           controller: _departmentController,
                           label: 'ภาควิชา/หน่วยงาน',
                           prefixIcon: Icons.business,
+                          hint: 'เช่น ภาควิชาวิทยาการคอมพิวเตอร์',
                         ),
                       ],
                     ),
@@ -281,7 +370,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   // Login Link
                   TextButton(
-                    onPressed: () => context.go('/login'),
+                    onPressed: () => context.go(Routes.login),
                     child: RichText(
                       text: TextSpan(
                         text: 'มีบัญชีแล้ว? ',

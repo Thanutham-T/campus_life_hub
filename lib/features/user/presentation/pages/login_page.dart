@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../config/routes/app_routes.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -38,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('เข้าสู่ระบบสำเร็จ')),
             );
-            context.go('/dashboard');
+            context.go(Routes.dashboard);
           } else if (state is LoginFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -142,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                         const Text('ยังไม่มีบัญชี? '),
                         GestureDetector(
                           onTap: () {
-                            context.go('/register');
+                                            context.go(Routes.register);
                           },
                           child: Text(
                             'สร้างบัญชี',

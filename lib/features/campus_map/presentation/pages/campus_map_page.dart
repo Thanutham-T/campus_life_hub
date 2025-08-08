@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../../../../core/constants/app_colors.dart';
-import 'dart:math' as math;
+import '../../domain/entities/place_entity.dart';
+import '../../data/services/google_places_service.dart';
+import '../../data/services/google_directions_service.dart';
+import '../../data/services/map_utils.dart';
+import '../widgets/location_details_bottom_sheet_widget.dart';
+import '../widgets/contact_options_modal_widget.dart';
 
 class CampusMapPage extends StatefulWidget {
   const CampusMapPage({super.key});
@@ -24,19 +27,21 @@ class _CampusMapPageState extends State<CampusMapPage> {
   // Prince of Songkla University coordinates
   static const LatLng _universityCenter = LatLng(7.0077, 100.4969);
 
-  // Real places data from Google Places API
-  Map<String, Map<String, dynamic>> _campusLocations = {};
+  // Services
+  final GooglePlacesService _placesService = GooglePlacesService();
+  final GoogleDirectionsService _directionsService = GoogleDirectionsService();
+
+  // Places data using PlaceEntity
+  Map<String, PlaceEntity> _campusLocations = {};
 
   Set<Marker> _tempMarkers = {}; // For temporary location markers
   List<String> _searchResults = [];
   bool _showSearchResults = false;
   String? _selectedLocationName;
-  Map<String, dynamic>? _selectedLocationData;
+  PlaceEntity? _selectedLocationData;
   double? _drivingTime;
   double? _walkingTime;
-
-  // Google Maps API Key
-  static const String _apiKey = 'AIzaSyCY1ZdVt3W2qlTYOxmKmrbApG3n7pHvoW0';
+  bool _isNavigationMode = false; // เพิ่ม state สำหรับโหมดนำทาง
 
   @override
   void initState() {
@@ -54,17 +59,17 @@ class _CampusMapPageState extends State<CampusMapPage> {
         'gas_station', 'shopping_mall', 'park', 'tourist_attraction'
       ];
       
-      Map<String, Map<String, dynamic>> allPlaces = {};
+      Map<String, PlaceEntity> allPlaces = {};
       
       // Fetch general nearby places first
-      final generalPlaces = await _fetchNearbyPlaces(_universityCenter, 2000);
-      allPlaces.addAll(generalPlaces);
+      final generalPlaces = await _placesService.fetchNearbyPlaces(_universityCenter, 2000);
+      allPlaces.addAll(_convertListToMap(generalPlaces));
       
       // Fetch specific types to ensure coverage
       for (String type in placeTypes) {
         try {
-          final typePlaces = await _fetchPlacesByType(_universityCenter, 1500, type);
-          allPlaces.addAll(typePlaces);
+          final typePlaces = await _placesService.fetchPlacesByType(_universityCenter, 1500, type);
+          allPlaces.addAll(_convertListToMap(typePlaces));
           await Future.delayed(const Duration(milliseconds: 500)); // Avoid rate limiting
         } catch (e) {
           // Continue with other types if one fails
@@ -80,275 +85,25 @@ class _CampusMapPageState extends State<CampusMapPage> {
     }
   }
 
-  // Fetch places by specific type
-  Future<Map<String, Map<String, dynamic>>> _fetchPlacesByType(LatLng center, int radius, String type) async {
-    final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-        '?location=${center.latitude},${center.longitude}'
-        '&radius=$radius'
-        '&type=$type'
-        '&key=$_apiKey'
-        '&language=th';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'OK') {
-        final Map<String, Map<String, dynamic>> places = {};
-        
-        for (var place in data['results']) {
-          final name = place['name'] ?? 'ไม่ทราบชื่อ';
-          final lat = place['geometry']['location']['lat'];
-          final lng = place['geometry']['location']['lng'];
-          final types = List<String>.from(place['types'] ?? []);
-          final rating = place['rating']?.toDouble();
-          final isOpen = place['opening_hours']?['open_now'];
-          
-          places[name] = {
-            'position': LatLng(lat, lng),
-            'description': place['vicinity'] ?? 'ไม่มีข้อมูลที่อยู่',
-            'type': _getPlaceType(types),
-            'rating': rating,
-            'priceLevel': place['price_level'],
-            'isOpen': isOpen,
-            'placeId': place['place_id'],
-            'photos': place['photos'],
-            'types': types,
-          };
-        }
-        
-        return places;
+  // Helper method to convert List<PlaceEntity> to Map<String, PlaceEntity>
+  Map<String, PlaceEntity> _convertListToMap(List<PlaceEntity> places) {
+    final Map<String, PlaceEntity> placeMap = {};
+    for (var place in places) {
+      if (!placeMap.containsKey(place.name)) {
+        placeMap[place.name] = place;
       }
-    } catch (e) {
-      // Error fetching places by type
     }
-    
-    return {};
+    return placeMap;
   }
 
-  // Fetch nearby places from Google Places API
-  Future<Map<String, Map<String, dynamic>>> _fetchNearbyPlaces(LatLng center, int radius) async {
-    final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-        '?location=${center.latitude},${center.longitude}'
-        '&radius=$radius'
-        '&key=$_apiKey'
-        '&language=th';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'OK') {
-        final Map<String, Map<String, dynamic>> places = {};
-        
-        for (var place in data['results']) {
-          final name = place['name'] ?? 'ไม่ทราบชื่อ';
-          final lat = place['geometry']['location']['lat'];
-          final lng = place['geometry']['location']['lng'];
-          final types = List<String>.from(place['types'] ?? []);
-          final rating = place['rating']?.toDouble();
-          final isOpen = place['opening_hours']?['open_now'];
-          
-          // Skip if already exists or if it's a generic location type
-          if (places.containsKey(name)) continue;
-          
-          places[name] = {
-            'position': LatLng(lat, lng),
-            'description': place['vicinity'] ?? 'ไม่มีข้อมูลที่อยู่',
-            'type': _getPlaceType(types),
-            'rating': rating,
-            'priceLevel': place['price_level'],
-            'isOpen': isOpen,
-            'placeId': place['place_id'],
-            'photos': place['photos'],
-            'types': types,
-          };
-        }
-        
-        // If we have next_page_token, fetch more results
-        if (data['next_page_token'] != null && places.length < 40) {
-          await Future.delayed(const Duration(seconds: 2)); // Required delay
-          final nextPagePlaces = await _fetchNextPagePlaces(data['next_page_token']);
-          places.addAll(nextPagePlaces);
-        }
-        
-        return places;
-      }
-    } catch (e) {
-      // Error fetching places
-    }
-    
-    return {};
-  }
-
-  // Fetch next page of places
-  Future<Map<String, Map<String, dynamic>>> _fetchNextPagePlaces(String pageToken) async {
-    final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-        '?pagetoken=$pageToken'
-        '&key=$_apiKey'
-        '&language=th';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'OK') {
-        final Map<String, Map<String, dynamic>> places = {};
-        
-        for (var place in data['results']) {
-          final name = place['name'] ?? 'ไม่ทราบชื่อ';
-          final lat = place['geometry']['location']['lat'];
-          final lng = place['geometry']['location']['lng'];
-          final types = List<String>.from(place['types'] ?? []);
-          final rating = place['rating']?.toDouble();
-          final isOpen = place['opening_hours']?['open_now'];
-          
-          places[name] = {
-            'position': LatLng(lat, lng),
-            'description': place['vicinity'] ?? 'ไม่มีข้อมูลที่อยู่',
-            'type': _getPlaceType(types),
-            'rating': rating,
-            'priceLevel': place['price_level'],
-            'isOpen': isOpen,
-            'placeId': place['place_id'],
-            'photos': place['photos'],
-            'types': types,
-          };
-        }
-        
-        return places;
-      }
-    } catch (e) {
-      // Error fetching places
-    }
-    
-    return {};
-  }
-
-  // Convert Google Places types to our type system
-  String _getPlaceType(List<String> types) {
-    if (types.contains('restaurant') || types.contains('food') || types.contains('meal_takeaway')) return 'restaurant';
-    if (types.contains('hospital') || types.contains('health')) return 'hospital';
-    if (types.contains('school') || types.contains('university') || types.contains('educational_institution')) return 'faculty';
-    if (types.contains('library')) return 'library';
-    if (types.contains('bank') || types.contains('atm') || types.contains('finance')) return 'bank';
-    if (types.contains('parking')) return 'parking';
-    if (types.contains('park') || types.contains('campground')) return 'park';
-    if (types.contains('convenience_store') || types.contains('store') || types.contains('supermarket')) return 'convenience';
-    if (types.contains('lodging') || types.contains('tourist_attraction')) return 'dormitory';
-    if (types.contains('gym') || types.contains('stadium')) return 'sports';
-    if (types.contains('gas_station')) return 'gas_station';
-    if (types.contains('pharmacy')) return 'pharmacy';
-    if (types.contains('shopping_mall') || types.contains('department_store')) return 'shopping';
-    return 'other';
-  }
-
-  // Get detailed place information
-  Future<Map<String, dynamic>?> _getPlaceDetails(String placeId) async {
-    final url = 'https://maps.googleapis.com/maps/api/place/details/json'
-        '?place_id=$placeId'
-        '&fields=name,formatted_address,formatted_phone_number,website,opening_hours,rating,reviews,photos'
-        '&key=$_apiKey'
-        '&language=th';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'OK') {
-        final result = data['result'];
-        return {
-          'name': result['name'],
-          'address': result['formatted_address'],
-          'phone': result['formatted_phone_number'],
-          'website': result['website'],
-          'rating': result['rating']?.toDouble(),
-          'openingHours': result['opening_hours']?['weekday_text'],
-          'isOpenNow': result['opening_hours']?['open_now'],
-          'reviews': result['reviews'],
-          'photos': result['photos'],
-        };
-      }
-    } catch (e) {
-      // Error fetching place details
-    }
-    
-    return null;
-  }
-
-  // ฟังก์ชันเรียก Google Directions API
-  Future<List<LatLng>> _fetchDirections(LatLng origin, LatLng destination, {String mode = 'walking'}) async {
-    final url = 'https://maps.googleapis.com/maps/api/directions/json'
-        '?origin=${origin.latitude},${origin.longitude}'
-        '&destination=${destination.latitude},${destination.longitude}'
-        '&mode=$mode'
-        '&key=$_apiKey';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'OK' && data['routes'].isNotEmpty) {
-        final points = data['routes'][0]['overview_polyline']['points'];
-        final duration = data['routes'][0]['legs'][0]['duration']['value']; // in seconds
-        
-        // Store travel times
-        if (mode == 'driving') {
-          _drivingTime = duration / 60.0; // convert to minutes
-        } else if (mode == 'walking') {
-          _walkingTime = duration / 60.0; // convert to minutes
-        }
-        
-        return _decodePolyline(points);
-      } else {
-        // Directions API error - fall back to straight line
-        return [origin, destination]; // Fall back to straight line
-      }
-    } catch (e) {
-      // Error fetching directions - fall back to straight line
-      return [origin, destination]; // Fall back to straight line
-    }
-  }
-
-  // ฟังก์ชันถอดรหัส polyline จาก Google Directions API
-  List<LatLng> _decodePolyline(String polyline) {
-    List<LatLng> points = [];
-    int index = 0, len = polyline.length;
-    int lat = 0, lng = 0;
-
-    while (index < len) {
-      int b, shift = 0, result = 0;
-      do {
-        b = polyline.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = polyline.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lng += dlng;
-
-      points.add(LatLng(lat / 1E5, lng / 1E5));
-    }
-    return points;
-  }
-
-  void _selectLocation(String name, Map<String, dynamic> locationData) async {
+  void _selectLocation(String name, PlaceEntity locationData) async {
     // Create marker for selected location
     final selectedMarker = Marker(
       markerId: MarkerId('selected_$name'),
-      position: locationData['position'],
+      position: locationData.position,
       infoWindow: InfoWindow(
         title: name,
-        snippet: locationData['description'],
+        snippet: locationData.description,
       ),
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
@@ -362,14 +117,17 @@ class _CampusMapPageState extends State<CampusMapPage> {
     });
 
     // Fetch detailed place information if placeId is available
-    if (locationData['placeId'] != null) {
-      final details = await _getPlaceDetails(locationData['placeId']);
+    if (locationData.placeId != null && locationData.placeId!.isNotEmpty) {
+      final details = await _placesService.getPlaceDetails(locationData.placeId!);
       if (details != null) {
         setState(() {
-          _selectedLocationData = {
-            ..._selectedLocationData!,
-            ...details,
-          };
+          _selectedLocationData = locationData.copyWith(
+            address: details.address,
+            phone: details.phone,
+            website: details.website,
+            openingHours: details.openingHours,
+            isOpenNow: details.isOpenNow,
+          );
         });
       }
     }
@@ -377,160 +135,30 @@ class _CampusMapPageState extends State<CampusMapPage> {
     // Fetch travel times if current position is available
     if (_currentPosition != null) {
       final origin = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
-      final destination = locationData['position'];
+      final destination = locationData.position;
       
       // Fetch both driving and walking times
-      await _fetchDirections(origin, destination, mode: 'driving');
-      await _fetchDirections(origin, destination, mode: 'walking');
+      final drivingResult = await _directionsService.fetchDirections(origin, destination, mode: 'driving');
+      final walkingResult = await _directionsService.fetchDirections(origin, destination, mode: 'walking');
       
-      setState(() {}); // Update UI with travel times
+      setState(() {
+        _drivingTime = drivingResult.travelTime;
+        _walkingTime = walkingResult.travelTime;
+      });
     }
   }
 
-  // ฟังก์ชันตรวจสอบสถานะเปิด-ปิด
-  String _getOperatingStatus(dynamic openingHours) {
-    if (openingHours == null) return 'ไม่มีข้อมูลเวลาทำการ';
-    
-    // If it's from Google Places API (isOpen field)
-    if (_selectedLocationData?['isOpenNow'] != null) {
-      return _selectedLocationData!['isOpenNow'] ? 'เปิดบริการ' : 'ปิดบริการ';
-    }
 
-    // If it's a string (legacy format)
-    if (openingHours is String) {
-      if (openingHours == '24 ชั่วโมง') return 'เปิดบริการ';
-      
-      final now = DateTime.now();
-      final currentTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-      
-      if (openingHours.contains(' - ')) {
-        final times = openingHours.split(' - ');
-        if (times.length == 2) {
-          final openTime = times[0];
-          final closeTime = times[1];
-          
-          if (currentTime.compareTo(openTime) >= 0 && currentTime.compareTo(closeTime) <= 0) {
-            return 'เปิดบริการ';
-          } else {
-            return 'ปิดบริการ';
-          }
-        }
-      }
-    }
-    
-    return 'ไม่มีข้อมูลเวลาทำการ';
-  }
 
-  void _makePhoneCall(String? phoneNumber) {
-    if (phoneNumber != null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('เบอร์โทรศัพท์'),
-          content: Text(phoneNumber),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('ปิด'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ไม่มีข้อมูลเบอร์โทรศัพท์'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    }
-  }
-
-  void _showContactOptions(Map<String, dynamic> locationData) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'ติดต่อ',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Phone
-            if (locationData['phone'] != null)
-              ListTile(
-                leading: const Icon(Icons.phone, color: Colors.green),
-                title: Text(
-                  locationData['phone'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                subtitle: const Text('เบอร์โทรศัพท์'),
-                onTap: () => _makePhoneCall(locationData['phone']),
-              ),
-            
-            // Website
-            if (locationData['website'] != null)
-              ListTile(
-                leading: const Icon(Icons.language, color: Colors.orange),
-                title: Text(
-                  locationData['website'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                subtitle: const Text('เว็บไซต์'),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Website: ${locationData['website']}')),
-                  );
-                },
-              ),
-            
-            // Address
-            if (locationData['address'] != null)
-              ListTile(
-                leading: const Icon(Icons.location_on, color: Colors.red),
-                title: Text(
-                  locationData['address'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
-                subtitle: const Text('ที่อยู่'),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('ที่อยู่: ${locationData['address']}')),
-                  );
-                },
-              ),
-            
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('ปิด'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _showContactOptions(PlaceEntity place) {
+    ContactOptionsModalWidget.show(context, place);
   }
 
   void _navigateToLocation(LatLng destination) {
     if (_currentPosition != null) {
+      setState(() {
+        _isNavigationMode = true; // เปลี่ยนเป็นโหมดนำทาง
+      });
       _createRoute(_currentPosition!, destination);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -545,14 +173,14 @@ class _CampusMapPageState extends State<CampusMapPage> {
   void _createRoute(Position currentPos, LatLng destination) async {
     try {
       // เรียก Directions API เพื่อได้เส้นทางจริง
-      final routePoints = await _fetchDirections(
+      final directionsResult = await _directionsService.fetchDirections(
         LatLng(currentPos.latitude, currentPos.longitude),
         destination,
       );
 
       final polyline = Polyline(
         polylineId: const PolylineId('route'),
-        points: routePoints,
+        points: directionsResult.points,
         color: AppColors.primary,
         width: 4,
       );
@@ -562,11 +190,11 @@ class _CampusMapPageState extends State<CampusMapPage> {
       });
 
       // ปรับกล้องให้เห็นเส้นทางทั้งหมด
-      if (routePoints.isNotEmpty) {
-        double minLat = routePoints.map((p) => p.latitude).reduce(math.min);
-        double maxLat = routePoints.map((p) => p.latitude).reduce(math.max);
-        double minLng = routePoints.map((p) => p.longitude).reduce(math.min);
-        double maxLng = routePoints.map((p) => p.longitude).reduce(math.max);
+      if (directionsResult.points.isNotEmpty) {
+        double minLat = directionsResult.points.map((p) => p.latitude).reduce((a, b) => a < b ? a : b);
+        double maxLat = directionsResult.points.map((p) => p.latitude).reduce((a, b) => a > b ? a : b);
+        double minLng = directionsResult.points.map((p) => p.longitude).reduce((a, b) => a < b ? a : b);
+        double maxLng = directionsResult.points.map((p) => p.longitude).reduce((a, b) => a > b ? a : b);
 
         _mapController?.animateCamera(
           CameraUpdate.newLatLngBounds(
@@ -624,8 +252,8 @@ class _CampusMapPageState extends State<CampusMapPage> {
         .where((location) {
           final locationData = _campusLocations[location]!;
           final locationName = location.toLowerCase();
-          final description = locationData['description'].toString().toLowerCase();
-          final type = locationData['type'].toString().toLowerCase();
+          final description = locationData.description.toLowerCase();
+          final type = locationData.type.toLowerCase();
           final queryLower = query.toLowerCase();
           
           return locationName.contains(queryLower) || 
@@ -637,14 +265,14 @@ class _CampusMapPageState extends State<CampusMapPage> {
     // Sort by distance if current position is available
     if (_currentPosition != null) {
       results.sort((a, b) {
-        final posA = _campusLocations[a]!['position'] as LatLng;
-        final posB = _campusLocations[b]!['position'] as LatLng;
+        final posA = _campusLocations[a]!.position;
+        final posB = _campusLocations[b]!.position;
         
-        final distA = _calculateDistance(
+        final distA = MapUtils.calculateDistance(
           _currentPosition!.latitude, _currentPosition!.longitude,
           posA.latitude, posA.longitude,
         );
-        final distB = _calculateDistance(
+        final distB = MapUtils.calculateDistance(
           _currentPosition!.latitude, _currentPosition!.longitude,
           posB.latitude, posB.longitude,
         );
@@ -658,17 +286,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
     });
   }
 
-  // Calculate distance between two points
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const double earthRadius = 6371; // km
-    final double dLat = (lat2 - lat1) * (math.pi / 180);
-    final double dLon = (lon2 - lon1) * (math.pi / 180);
-    final double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(lat1 * (math.pi / 180)) * math.cos(lat2 * (math.pi / 180)) *
-        math.sin(dLon / 2) * math.sin(dLon / 2);
-    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    return earthRadius * c;
-  }
+
 
   Future<void> _requestLocationPermission() async {
     try {
@@ -702,7 +320,8 @@ class _CampusMapPageState extends State<CampusMapPage> {
   // Handle map tap to search for nearby places
   void _onMapTap(LatLng location) async {
     // Search for places near the tapped location
-    final nearbyPlaces = await _fetchNearbyPlaces(location, 500); // 500m radius
+    final nearbyPlacesList = await _placesService.fetchNearbyPlaces(location, 500); // 500m radius
+    final nearbyPlaces = _convertListToMap(nearbyPlacesList);
     
     if (nearbyPlaces.isNotEmpty) {
       // Find the closest place to the tapped location
@@ -710,8 +329,8 @@ class _CampusMapPageState extends State<CampusMapPage> {
       double minDistance = double.infinity;
       
       for (var entry in nearbyPlaces.entries) {
-        final placeLocation = entry.value['position'] as LatLng;
-        final distance = _calculateDistance(
+        final placeLocation = entry.value.position;
+        final distance = MapUtils.calculateDistance(
           location.latitude, location.longitude,
           placeLocation.latitude, placeLocation.longitude,
         );
@@ -747,17 +366,19 @@ class _CampusMapPageState extends State<CampusMapPage> {
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
     );
 
+    // Create temporary PlaceEntity for the selected location
+    final tempPlace = PlaceEntity(
+      name: 'ตำแหน่งที่เลือก',
+      position: location,
+      description: 'ตำแหน่งที่คุณเลือกบนแผนที่',
+      type: 'location',
+      types: ['location'],
+    );
+
     setState(() {
       _tempMarkers = {tempMarker}; // Show only this marker
       _selectedLocationName = 'ตำแหน่งที่เลือก';
-      _selectedLocationData = {
-        'position': location,
-        'description': 'ตำแหน่งที่คุณเลือกบนแผนที่',
-        'type': 'location',
-        'rating': null,
-        'isOpen': null,
-        'placeId': null,
-      };
+      _selectedLocationData = tempPlace;
       _drivingTime = null;
       _walkingTime = null;
     });
@@ -767,8 +388,16 @@ class _CampusMapPageState extends State<CampusMapPage> {
       final origin = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
       
       // Fetch both driving and walking times
-      _fetchDirections(origin, location, mode: 'driving');
-      _fetchDirections(origin, location, mode: 'walking');
+      _directionsService.fetchDirections(origin, location, mode: 'driving').then((result) {
+        setState(() {
+          _drivingTime = result.travelTime;
+        });
+      });
+      _directionsService.fetchDirections(origin, location, mode: 'walking').then((result) {
+        setState(() {
+          _walkingTime = result.travelTime;
+        });
+      });
     }
   }
 
@@ -785,19 +414,18 @@ class _CampusMapPageState extends State<CampusMapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Google Map
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            onTap: _onMapTap,
-            initialCameraPosition: const CameraPosition(
-              target: _universityCenter,
-              zoom: 16.0,
-            ),
-            markers: _tempMarkers, // Show only temporary markers
-            polylines: _polylines,
+    return Stack(
+      children: [
+        // Google Map
+        GoogleMap(
+          onMapCreated: _onMapCreated,
+          onTap: _onMapTap,
+          initialCameraPosition: const CameraPosition(
+            target: _universityCenter,
+            zoom: 16.0,
+          ),
+          markers: _tempMarkers, // Show only temporary markers
+          polylines: _polylines,
             myLocationEnabled: _isLocationEnabled,
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
@@ -819,7 +447,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -857,7 +485,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -890,7 +518,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -937,7 +565,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -951,7 +579,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                         final locationData = _campusLocations[location]!;
                         return ListTile(
                           leading: Icon(
-                            _getLocationIcon(locationData['type']),
+                            MapUtils.getLocationIcon(locationData.type),
                             color: AppColors.primary,
                           ),
                           title: Text(
@@ -960,7 +588,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                             maxLines: 1,
                           ),
                           subtitle: Text(
-                            locationData['description'],
+                            locationData.description,
                             style: TextStyle(color: Colors.grey[600]),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
@@ -970,7 +598,7 @@ class _CampusMapPageState extends State<CampusMapPage> {
                               _showSearchResults = false;
                             });
                             _searchController.text = location;
-                            _goToLocation(locationData['position']);
+                            _goToLocation(locationData.position);
                             _selectLocation(location, locationData);
                           },
                         );
@@ -982,234 +610,37 @@ class _CampusMapPageState extends State<CampusMapPage> {
           ),
           
           // Selected location details (bottom)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            bottom: _selectedLocationName != null && _selectedLocationData != null ? 0 : -400,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _selectedLocationName ?? '',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            setState(() {
-                              _selectedLocationName = null;
-                              _selectedLocationData = null;
-                              _drivingTime = null;
-                              _walkingTime = null;
-                              _tempMarkers = {}; // Clear all markers
-                              _polylines = {}; // Clear navigation route
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    if (_selectedLocationData != null) ...[
-                      Text(
-                        _selectedLocationData!['description'],
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Travel times
-                      if (_drivingTime != null || _walkingTime != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Wrap(
-                            spacing: 16,
-                            children: [
-                              if (_drivingTime != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.directions_car, size: 20, color: Colors.blue),
-                                    const SizedBox(width: 4),
-                                    Text('${_drivingTime!.round()} นาที'),
-                                  ],
-                                ),
-                              if (_walkingTime != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.directions_walk, size: 20, color: Colors.green),
-                                    const SizedBox(width: 4),
-                                    Text('${_walkingTime!.round()} นาที'),
-                                  ],
-                                ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      
-                      // Operating hours, rating, and status
-                      if (_selectedLocationData!['rating'] != null) ...[
-                        Row(
-                          children: [
-                            const Icon(Icons.star, size: 16, color: Colors.orange),
-                            const SizedBox(width: 4),
-                            Text('${_selectedLocationData!['rating']} ดาว'),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      
-                      // Operating status and hours
-                      if (_selectedLocationData!['openingHours'] != null || _selectedLocationData!['isOpenNow'] != null) ...[
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time, size: 16, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            if (_selectedLocationData!['openingHours'] is List)
-                              Flexible(
-                                child: Text(
-                                  _selectedLocationData!['openingHours'][0] ?? 'ไม่มีข้อมูล',
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              )
-                            else
-                              Flexible(
-                                child: Text(
-                                  _selectedLocationData!['openingHours']?.toString() ?? 'ไม่มีข้อมูล',
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '(${_getOperatingStatus(_selectedLocationData!['openingHours'])})',
-                              style: TextStyle(
-                                color: _getOperatingStatus(_selectedLocationData!['openingHours']) == 'เปิดบริการ' 
-                                    ? Colors.green 
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      
-                      // Action buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _navigateToLocation(_selectedLocationData!['position']),
-                              icon: const Icon(Icons.directions, size: 18),
-                              label: const Text(
-                                'นำทาง',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _goToLocation(_selectedLocationData!['position']),
-                              icon: const Icon(Icons.zoom_in, size: 18),
-                              label: const Text(
-                                'ดูตำแหน่ง',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            onPressed: () => _showContactOptions(_selectedLocationData!),
-                            icon: const Icon(Icons.contact_phone, color: Colors.green),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.green.withValues(alpha: 0.1),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ], // Close the if (_selectedLocationData != null) ... [ spread operator
-                    ], // Close the Column's children array
-                  ),
-                ),
+          if (_selectedLocationName != null && _selectedLocationData != null)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: LocationDetailsBottomSheetWidget(
+                place: _selectedLocationData!,
+                placeName: _selectedLocationName!,
+                isNavigationMode: _isNavigationMode,
+                drivingTime: _drivingTime,
+                walkingTime: _walkingTime,
+                onClose: () {
+                  setState(() {
+                    _selectedLocationName = null;
+                    _selectedLocationData = null;
+                    _drivingTime = null;
+                    _walkingTime = null;
+                    _tempMarkers = {}; // Clear all markers
+                    _polylines = {}; // Clear navigation route
+                    _isNavigationMode = false; // Reset navigation mode
+                  });
+                },
+                onNavigate: () => _navigateToLocation(_selectedLocationData!.position),
+                onViewLocation: () => _goToLocation(_selectedLocationData!.position),
+                onShowContact: () => _showContactOptions(_selectedLocationData!),
               ),
             ),
-          ),
         ], // Close the Stack's children array
-      ),
-    );
-  }
-
-  IconData _getLocationIcon(String type) {
-    switch (type) {
-      case 'library':
-        return Icons.local_library;
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'admin':
-        return Icons.business;
-      case 'faculty':
-        return Icons.school;
-      case 'dormitory':
-        return Icons.home;
-      case 'parking':
-        return Icons.local_parking;
-      case 'hospital':
-        return Icons.local_hospital;
-      case 'bank':
-        return Icons.account_balance;
-      case 'park':
-        return Icons.park;
-      case 'convenience':
-        return Icons.store;
-      case 'gas_station':
-        return Icons.local_gas_station;
-      case 'pharmacy':
-        return Icons.local_pharmacy;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'location':
-        return Icons.place;
-      case 'other':
-        return Icons.place;
-      default:
-        return Icons.location_on;
-    }
+      );
   }
 
   @override

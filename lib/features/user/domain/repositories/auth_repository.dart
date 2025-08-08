@@ -13,9 +13,14 @@ abstract class AuthRepository {
     required String password,
     required String firstName,
     required String lastName,
-    String? phoneNumber,
-    String? studentId,
-    String? department,
+    required String phoneNumber,
+    required String studentId,
+    required String department,
+    required String educationLevel,
+    required String campus,
+    required String faculty,
+    required String major,
+    required String curriculum,
   });
 
   Future<Either<Failure, void>> logout();

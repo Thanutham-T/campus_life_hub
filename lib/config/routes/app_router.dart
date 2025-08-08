@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../main.dart';
 import '../routes/app_routes.dart';
 import '../routes/app_route_builders.dart';
 
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
 import '../../features/user/presentation/pages/register_page.dart';
-// import '../../features/user/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/course_schedule/presentation/pages/schedule_page.dart';
 import '../../features/campus_event/presentation/pages/event_page.dart';
 import '../../features/study_group/presentation/pages/study_group_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
@@ -21,14 +23,21 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: Routes.splash, name: 'splash', builder: (context, state) => const SplashPage()),
     GoRoute(path: Routes.login, name: 'login', builder: (context, state) => const LoginPage()),
     GoRoute(path: Routes.register, name: 'register', builder: (context, state) => const RegisterPage()),
-    GoRoute(path: Routes.dashboard, name: 'dashboard', builder: (context, state) => const DashboardPage()),
-    // GoRoute(path: Routes.profile, name: 'profile', builder: (context, state) => const ProfilePage()),
-    // GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => RouteBuilders.buildSchedulePageWithBloc()),
-    GoRoute(path: Routes.course, name: 'course', builder: (context, state) => RouteBuilders.buildCoursePageWithBloc()),
-    GoRoute(path: Routes.events, name: 'events', builder: (context, state) => const EventPage()),
-    GoRoute(path: Routes.studyGroups, name: 'groups', builder: (context, state) => const StudyGroupPage()),
-    GoRoute(path: Routes.campusMap, name: 'map', builder: (context, state) => const CampusMapPage()),
-    GoRoute(path: Routes.announcements, name: 'announcements', builder: (context, state) => const AnnouncementPage()),
+    
+    // Routes with MainLayout
+    ShellRoute(
+      builder: (context, state, child) => MainLayout(child: child),
+      routes: [
+        GoRoute(path: Routes.dashboard, name: 'dashboard', builder: (context, state) => const DashboardPage()),
+        GoRoute(path: Routes.profile, name: 'profile', builder: (context, state) => const ProfilePage()),
+        GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => const SchedulePage()),
+        GoRoute(path: Routes.course, name: 'course', builder: (context, state) => RouteBuilders.buildCoursePageWithBloc()),
+        GoRoute(path: Routes.events, name: 'events', builder: (context, state) => const EventPage()),
+        GoRoute(path: Routes.studyGroups, name: 'groups', builder: (context, state) => const StudyGroupPage()),
+        GoRoute(path: Routes.campusMap, name: 'map', builder: (context, state) => const CampusMapPage()),
+        GoRoute(path: Routes.announcements, name: 'announcements', builder: (context, state) => const AnnouncementPage()),
+      ]
+    ),
   ],
   errorBuilder: (context, state) => Scaffold(
     body: Center(
@@ -40,7 +49,7 @@ final GoRouter appRouter = GoRouter(
           Text('ไม่พบหน้าที่ต้องการ: ${state.matchedLocation}'),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => context.go(context.namedLocation('dashboard')),
+            onPressed: () => context.go(Routes.dashboard),
             child: const Text('กลับไปหน้าแรก'),
           ),
         ],

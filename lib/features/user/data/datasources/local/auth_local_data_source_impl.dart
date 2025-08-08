@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/profile_model.dart';
+import '../../models/profile_model.dart';
 import 'auth_local_data_source.dart';
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {

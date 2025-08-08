@@ -2,8 +2,8 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/core_modules.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../datasources/auth_local_data_source.dart';
-import '../datasources/auth_remote_data_source.dart';
+import '../datasources/local/auth_local_data_source.dart';
+import '../datasources/remote/auth_remote_data_source.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -42,9 +42,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String firstName,
     required String lastName,
-    String? phoneNumber,
-    String? studentId,
-    String? department,
+    required String phoneNumber,
+    required String studentId,
+    required String department,
+    required String educationLevel,
+    required String campus,
+    required String faculty,
+    required String major,
+    required String curriculum,
   }) async {
     try {
       final profileModel = await remoteDataSource.register(
@@ -55,6 +60,11 @@ class AuthRepositoryImpl implements AuthRepository {
         phoneNumber: phoneNumber,
         studentId: studentId,
         department: department,
+        educationLevel: educationLevel,
+        campus: campus,
+        faculty: faculty,
+        major: major,
+        curriculum: curriculum,
       );
       
       // Cache the user data locally
