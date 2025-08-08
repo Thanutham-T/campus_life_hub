@@ -142,79 +142,15 @@ class CoursePage extends StatelessWidget {
                           ),
                           const Divider(),
                         ],
-        Expanded(
-          child: BlocBuilder<CourseBloc, CourseState>(
-            builder: (context, state) {
-              if (state is CourseLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is CourseError) {
-                return Center(child: Text('Error: ${state.message}'));
-              } else if (state is CourseLoaded) {
-                final courses = state.courses;
-                if (courses.isEmpty) {
-                  return const Center(
-                    child: Text('No courses found for the current term.'),
+                      );
+                    },
                   );
                 }
-                return ListView.builder(
-                  itemCount: courses.length,
-                  itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8.0,
-                            horizontal: 16.0,
-                          ),
-                          child: Text(
-                            '${course.code} - ${course.name}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        ...course.sections.map(
-                          (section) => CourseCard(
-                            courseCode: course.code,
-                            courseName: course.name,
-                            courseSection: section.sectionCode,
-                            schedules: section.schedules
-                                .map(
-                                  (s) => Schedule(
-                                    day: s.dayOfWeek,
-                                    time: '${s.startTime} - ${s.endTime}',
-                                    instructor: section.instructor,
-                                    room: s.room,
-                                  ),
-                                )
-                                .toList(),
-                            isRegistered: state.isEnrolledView,
-                            onEnrol: () {
-                              context.read<CourseBloc>().add(
-                                EnrolToCourse(section.id),
-                              );
-                            },
-                            onWithdrawn: () {
-                              context.read<CourseBloc>().add(
-                                WithdrawFromCourse(section.id),
-                              );
-                            },
-                          ),
-                        ),
-                        const Divider(),
-                      ],
-                    );
-                  },
-                );
-              }
-              return const SizedBox.shrink();
-            },
+                return const SizedBox.shrink();
+              },
+            ),
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      );
+    }
 }
