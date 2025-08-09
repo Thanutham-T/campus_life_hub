@@ -44,9 +44,7 @@ class MyApp extends StatelessWidget {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('th', 'TH'), // Default to Thai
-        routerDelegate: appRouter.routerDelegate,
-        routeInformationParser: appRouter.routeInformationParser,
-        routeInformationProvider: appRouter.routeInformationProvider,
+        routerConfig: AppRouter.instance.router,
       ),
     );
   }
