@@ -56,6 +56,7 @@ dependencies:
   flutter_slidable: ^4.0.0     # For sliding actions on list items
   flutter_localizations:
     sdk: flutter
+  logger: ^2.6.1
 
 dev_dependencies:
   flutter_test:
