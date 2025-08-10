@@ -3,8 +3,9 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Feature DI imports
-import '../../features/user/di/injector.dart';
+import '../../features/user/di/auth_di.dart';
 import '../../features/course/di/course_di.dart';
+
 
 final sl = GetIt.instance;
 

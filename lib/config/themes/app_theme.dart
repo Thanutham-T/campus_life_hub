@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Primary Colors
@@ -47,26 +48,28 @@ class AppTheme {
         foregroundColor: AppColors.textWhite,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: const TextStyle(
+        titleTextStyle: GoogleFonts.notoSansThai(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: AppColors.textWhite,
         ),
       ),
-      textTheme: TextTheme(
-        titleLarge: TextStyle(
-          fontSize: 22, 
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 18, 
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 16,
-          color: AppColors.textPrimary,
+      textTheme: GoogleFonts.notoSansThaiTextTheme(
+        TextTheme(
+          titleLarge: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+          titleMedium: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
