@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'config/routes/app_router.dart';
 import 'config/routes/app_routes.dart';
@@ -14,12 +15,14 @@ import 'features/user/presentation/bloc/auth_event.dart';
 import 'core/widgets/custom_bottom_navigation_bar.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   
   await Firebase.initializeApp();
-  
-  // Initialize dependency injection
   await di.init();
+
+  FlutterNativeSplash.remove();
   
   runApp(const MyApp());
 }
@@ -34,7 +37,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Campus Life Hub',
         theme: AppTheme.lightTheme,
-        
+
         // Localization
         localizationsDelegates: const [
           AppLocalizations.delegate,
