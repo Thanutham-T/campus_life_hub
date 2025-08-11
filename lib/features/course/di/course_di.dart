@@ -15,9 +15,7 @@ import '../domain/usecases/get_courses_with_enroll_status.dart';
 import '../presentation/bloc/course_bloc.dart';
 
 
-final sl = GetIt.instance;
-
-Future<void> registerCourseDI() async {
+Future<void> registerCourseDI(GetIt sl) async {
   // Data Sources
   sl.registerLazySingletonAsync<CourseDataSource>(() async => FakeCourseDataSource());
 
