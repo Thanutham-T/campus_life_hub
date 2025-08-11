@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../main.dart';
+import '../layouts/main_layout.dart';
 import '../routes/app_routes.dart';
 import '../routes/app_route_builders.dart';
 
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
 import '../../features/user/presentation/pages/register_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -28,6 +29,7 @@ class AppRouter {
     debugLogDiagnostics: true,
     routes: [
       GoRoute(path: Routes.splash, name: 'splash', builder: (context, state) => const SplashPage()),
+      GoRoute(path: Routes.onboarding, name: 'onboarding', builder: (context, state) => const OnBoardingPage()),
       GoRoute(path: Routes.login, name: 'login', builder: (context, state) => const LoginPage()),
       GoRoute(path: Routes.register, name: 'register', builder: (context, state) => const RegisterPage()),
 

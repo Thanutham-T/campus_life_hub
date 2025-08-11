@@ -3,10 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:campus_life_hub/config/routes/app_routes.dart';
-import 'package:campus_life_hub/core/core_modules.dart';
 
-import '../../../user/presentation/bloc/auth_bloc.dart';
-import '../../../user/presentation/bloc/auth_state.dart';
+import 'package:campus_life_hub/core/core_modules.dart';
+import 'package:campus_life_hub/core/logging/logging.dart';
+
+import 'package:campus_life_hub/core/services/key_value_storage_service.dart';
+
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
+import 'package:campus_life_hub/features//user/presentation/bloc/auth_state.dart';
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
 
 
 class SplashPage extends StatefulWidget {
@@ -91,10 +96,24 @@ class _SplashPageState extends State<SplashPage>
     await Future.delayed(const Duration(milliseconds: 3000));
     
     if (mounted) {
+      // Check if first time user
+      final isFirstTime = context.read<KeyValueStorageService>().isFirstTimeOnboarding();
+      // AppLogger.debug(isFirstTime.toString());
+
+      if (isFirstTime) {
+        if (!mounted) return;
+        context.read<KeyValueStorageService>().setFirstTimeOnboarding(false);
+        // AppLogger.debug(context.read<KeyValueStorageService>().isFirstTimeOnboarding().toString());
+        context.go(Routes.onboarding);
+        return;
+      }
+
       // Check authentication state and navigate accordingly
       final authBloc = context.read<AuthBloc>();
       final authState = authBloc.state;
-      
+
+      AppLogger.debug('Auth state: $authState');
+
       if (authState is AuthAuthenticated) {
         // User is logged in, go to dashboard
         context.go(Routes.dashboard);
