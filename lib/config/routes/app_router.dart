@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../layouts/main_layout.dart';
 import '../routes/app_routes.dart';
 import '../routes/app_route_builders.dart';
+import '../routes/middleware.dart';
 
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
@@ -27,6 +28,10 @@ class AppRouter {
     initialLocation: Routes.splash,
     routerNeglect: false,
     debugLogDiagnostics: true,
+    redirect: (context, state) async {
+        String? redirectPath = await Middleware().routeMiddleware(state);
+        return redirectPath;
+    },
     routes: [
       GoRoute(path: Routes.splash, name: 'splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: Routes.onboarding, name: 'onboarding', builder: (context, state) => const OnBoardingPage()),
