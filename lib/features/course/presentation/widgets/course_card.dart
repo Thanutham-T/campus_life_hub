@@ -12,7 +12,7 @@ class CourseCard extends StatefulWidget {
   final VoidCallback? onWithdrawn;
 
   const CourseCard({
-    Key? key,
+    super.key,
     required this.courseCode,
     required this.courseName,
     required this.courseSection,
@@ -20,7 +20,7 @@ class CourseCard extends StatefulWidget {
     required this.isRegistered,
     this.onEnrol,
     this.onWithdrawn,
-  }) : super(key: key);
+  });
 
   @override
   State<CourseCard> createState() => _CourseCardState();

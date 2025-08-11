@@ -11,7 +11,6 @@ import '../../features/user/presentation/pages/register_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/course_schedule/presentation/pages/schedule_page.dart';
 import '../../features/campus_event/presentation/pages/event_page.dart';
-import '../../features/study_group/presentation/pages/study_group_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
 import '../../features/announcement/presentation/pages/announcement_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -33,7 +32,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => const SchedulePage()),
         GoRoute(path: Routes.course, name: 'course', builder: (context, state) => RouteBuilders.buildCoursePageWithBloc()),
         GoRoute(path: Routes.events, name: 'events', builder: (context, state) => const EventPage()),
-        GoRoute(path: Routes.studyGroups, name: 'groups', builder: (context, state) => const StudyGroupPage()),
+        GoRoute(path: Routes.studyGroups, name: 'groups', builder: (context, state) => RouteBuilders.buildStudyGroupPageWithBloc()),
         GoRoute(path: Routes.campusMap, name: 'map', builder: (context, state) => const CampusMapPage()),
         GoRoute(path: Routes.announcements, name: 'announcements', builder: (context, state) => const AnnouncementPage()),
       ]

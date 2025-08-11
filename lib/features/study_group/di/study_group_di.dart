@@ -13,7 +13,6 @@ class StudyGroupDI {
       'subject': 'MAT101',
       'description': 'กลุ่มเรียนคณิตศาสตร์พื้นฐาน สำหรับนักศึกษาปี 1',
       'members': 8,
-      'maxMembers': 12,
       'category': 'mathematics',
       'difficulty': 'beginner',
       'schedule': 'จันทร์ เวลา 18:00-20:00',
@@ -28,7 +27,6 @@ class StudyGroupDI {
       'subject': 'CS101',
       'description': 'เรียนรู้การเขียนโปรแกรมพื้นฐาน Python และ Java',
       'members': 15,
-      'maxMembers': 20,
       'category': 'programming',
       'difficulty': 'intermediate',
       'schedule': 'พุธ เวลา 19:00-21:00',
@@ -43,7 +41,6 @@ class StudyGroupDI {
       'subject': 'ENG102',
       'description': 'ฝึกพูดและเขียนภาษาอังกฤษ เตรียมสอบ TOEIC',
       'members': 6,
-      'maxMembers': 10,
       'category': 'language',
       'difficulty': 'intermediate',
       'schedule': 'ศุกร์ เวลา 17:00-19:00',
@@ -83,10 +80,9 @@ class StudyGroupDI {
         group['isJoined'] == false && group['isActive'] == true).toList();
   }
 
-  /// Get study groups with available slots
+  /// Get study groups with available slots (always return all since no limit)
   static List<Map<String, dynamic>> getStudyGroupsWithSlots() {
-    return _studyGroups.where((group) => 
-        group['members'] < group['maxMembers']).toList();
+    return _studyGroups.where((group) => group['isActive'] == true).toList();
   }
 
   /// Search study groups
@@ -114,7 +110,7 @@ class StudyGroupDI {
     final index = _studyGroups.indexWhere((group) => group['id'] == id);
     if (index != -1) {
       final group = _studyGroups[index];
-      if (group['members'] < group['maxMembers'] && !group['isJoined']) {
+      if (!group['isJoined']) { // Remove maxMembers check
         _studyGroups[index]['isJoined'] = true;
         _studyGroups[index]['members']++;
         return true;
@@ -232,13 +228,12 @@ class StudyGroupDI {
   /// Get member status text
   static String getMemberStatusText(Map<String, dynamic> group) {
     final members = group['members'] as int;
-    final maxMembers = group['maxMembers'] as int;
-    return '$members/$maxMembers คน';
+    return '$members คน'; // Remove maxMembers limit
   }
 
-  /// Check if group is full
+  /// Check if group is full (always return false since no limit)
   static bool isGroupFull(Map<String, dynamic> group) {
-    return group['members'] >= group['maxMembers'];
+    return false; // No member limit
   }
 
   /// Get group status color

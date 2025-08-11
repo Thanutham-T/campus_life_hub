@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Feature DI imports
 import '../../features/user/di/injector.dart';
 import '../../features/course/di/course_di.dart';
+import '../../features/study_group/injection_container.dart';
 
 final sl = GetIt.instance;
 
@@ -27,6 +28,9 @@ Future<void> _initFeatures() async {
   
   // Course feature
   await registerCourseDI();
+  
+  // Study Group feature
+  await initStudyGroupFeature();
   
   // Add other features here in the future
   // await initDashboardFeature(sl);

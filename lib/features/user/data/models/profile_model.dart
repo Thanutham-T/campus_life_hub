@@ -119,6 +119,7 @@ class ProfileModel extends ProfileEntity {
     );
   }
 
+  @override
   ProfileModel copyWith({
     String? id,
     String? email,
