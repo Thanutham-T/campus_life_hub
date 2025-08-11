@@ -1,17 +1,11 @@
-import 'package:campus_life_hub/core/constants/dimens.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:campus_life_hub/config/routes/app_routes.dart';
-
 import 'package:campus_life_hub/core/core_modules.dart';
-import 'package:campus_life_hub/core/logging/logging.dart';
 
-import 'package:campus_life_hub/core/services/key_value_storage_service.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
