@@ -1,3 +1,7 @@
+import 'package:campus_life_hub/core/constants/dimens.dart';
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,11 +13,6 @@ import 'package:campus_life_hub/core/logging/logging.dart';
 
 import 'package:campus_life_hub/core/services/key_value_storage_service.dart';
 
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
-import 'package:campus_life_hub/features//user/presentation/bloc/auth_state.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
-
-
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -21,12 +20,11 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with TickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;
   late AnimationController _progressController;
-  
+
   late Animation<double> _logoAnimation;
   late Animation<double> _textAnimation;
   late Animation<double> _progressAnimation;
@@ -34,47 +32,35 @@ class _SplashPageState extends State<SplashPage>
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controllers
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _textController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _progressController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
     // Create animations
-    _logoAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.elasticOut,
-    ));
+    _logoAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
+    );
 
-    _textAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeInOut,
-    ));
+    _textAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeInOut),
+    );
 
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeInOut,
-    ));
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+    );
 
     // Start animations sequence
     _startAnimations();
@@ -83,21 +69,23 @@ class _SplashPageState extends State<SplashPage>
   void _startAnimations() async {
     // Start logo animation
     _logoController.forward();
-    
+
     // Wait a bit then start text animation
     await Future.delayed(const Duration(milliseconds: 500));
     _textController.forward();
-    
+
     // Start progress animation
     await Future.delayed(const Duration(milliseconds: 200));
     _progressController.forward();
-    
+
     // Wait for loading to complete then navigate
     await Future.delayed(const Duration(milliseconds: 3000));
-    
+
     if (mounted) {
       // Check if first time user
-      final isFirstTime = context.read<KeyValueStorageService>().isFirstTimeOnboarding();
+      final isFirstTime = context
+          .read<KeyValueStorageService>()
+          .isFirstTimeOnboarding();
       // AppLogger.debug(isFirstTime.toString());
 
       if (isFirstTime) {
@@ -108,17 +96,16 @@ class _SplashPageState extends State<SplashPage>
         return;
       }
 
-      // Check authentication state and navigate accordingly
-      final authBloc = context.read<AuthBloc>();
-      final authState = authBloc.state;
+      final user = FirebaseAuth.instance.currentUser;
 
-      AppLogger.debug('Auth state: $authState');
+      // AppLogger.debug('Auth state: $user');
 
-      if (authState is AuthAuthenticated) {
-        // User is logged in, go to dashboard
+      if (!mounted) return;
+      if (user != null) {
+        user.getIdToken(true);
         context.go(Routes.dashboard);
       } else {
-        // User is not logged in, go to login
+        FirebaseAuth.instance.signOut();
         context.go(Routes.login);
       }
     }
@@ -168,7 +155,9 @@ class _SplashPageState extends State<SplashPage>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                                color: AppColors.primaryBlue.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -185,41 +174,45 @@ class _SplashPageState extends State<SplashPage>
                   ),
                 ),
               ),
-              
+
               // App name section
               AnimatedBuilder(
                 animation: _textAnimation,
                 builder: (context, child) {
                   return Opacity(
                     opacity: _textAnimation.value,
-                    child: Column(
-                      children: [
-                        const Text(
-                          AppStrings.appName,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1.2,
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Text(
+                            AppStrings.appName,
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          AppStrings.appDescription,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.8),
-                            letterSpacing: 0.5,
+                          const SizedBox(height: 8),
+                          Text(
+                            AppStrings.appDescription,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
-              
+
               const SizedBox(height: 60),
-              
+
               // Loading progress section
               Expanded(
                 flex: 1,
@@ -235,7 +228,7 @@ class _SplashPageState extends State<SplashPage>
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Progress bar
                     Container(
                       width: 200,
@@ -257,7 +250,9 @@ class _SplashPageState extends State<SplashPage>
                                 borderRadius: BorderRadius.circular(2),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryBlue.withValues(alpha: 0.5),
+                                    color: AppColors.primaryBlue.withValues(
+                                      alpha: 0.5,
+                                    ),
                                     blurRadius: 4,
                                   ),
                                 ],
@@ -267,7 +262,7 @@ class _SplashPageState extends State<SplashPage>
                         },
                       ),
                     ),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -279,4 +274,3 @@ class _SplashPageState extends State<SplashPage>
     );
   }
 }
-
