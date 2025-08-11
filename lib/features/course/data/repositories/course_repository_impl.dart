@@ -12,17 +12,50 @@ class CourseRepositoryImpl implements CourseRepository {
   Future<List<CourseEntity>> getCoursesFromSemester(String semester) async => await dataSource.fetchCoursesFromSemester(semester);
 
   @override
-  Future<List<CourseEntity>> getCourseByCodeOrName(String query) async => await dataSource.fetchCourseByCodeOrName(query);
-
-  @override
   Future<CourseEntity> getCourseDetail(String courseId) async => await dataSource.fetchCourseDetail(courseId);
 
   @override
-  Future<List<CourseEntity>> getEnrolledCourses(String userId) async => await dataSource.fetchEnrolledCourses(userId);
+  Future<List<CourseEntity>> getEnrolledCourses(String userId) async {
+    final enrolledCourses = await dataSource.fetchEnrolledCourses(userId);
+    return enrolledCourses.map((course) {
+      return CourseEntity(
+        id: course.id,
+        code: course.code,
+        nameEn: course.nameEn,
+        nameTh: course.nameTh,
+        description: course.description,
+        credit: course.credit,
+        sections: course.sections.map((section) => section.copyWith(isEnrolled: true)).toList(),
+      );
+    }).toList();
+  }
 
   @override
-  Future<void> enrolCourse(String sectionId) async => await dataSource.enrolToSection(sectionId);
+  Future<void> enrollCourse(String sectionId) async => await dataSource.enrollToSection(sectionId);
 
   @override
   Future<void> withdrawFromSection(String sectionId) async => await dataSource.withdrawFromSection(sectionId);
+
+  @override
+  Future<List<CourseEntity>> getCoursesWithEnrollStatus(String userId) async {
+    final courses = await dataSource.fetchCoursesFromSemester('1/2569'); // Example semester, adjust as needed
+    final enrolledCourses = await dataSource.fetchEnrolledCourses(userId);
+
+    return courses.map((course) {
+      return CourseEntity(
+        id: course.id,
+        code: course.code,
+        nameEn: course.nameEn,
+        nameTh: course.nameTh,
+        description: course.description,
+        credit: course.credit,
+        sections: course.sections.map((section) {
+          final isSectionEnrolled = enrolledCourses.any((enrolledCourse) =>
+        enrolledCourse.sections.any((enrolledSection) => enrolledSection.id == section.id)
+          );
+          return section.copyWith(isEnrolled: isSectionEnrolled);
+        }).toList(),
+      );
+        }).toList();
+  }
 }

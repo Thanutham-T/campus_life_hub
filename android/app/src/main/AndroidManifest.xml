@@ -7,9 +7,9 @@
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     
     <application
-        android:label="campuslifehub"
-        android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+            android:label="campuslifehub"
+            android:name="${applicationName}"
+            android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"

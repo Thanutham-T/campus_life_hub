@@ -11,4 +11,5 @@ abstract final class Routes {
   static const campusMap = '/campusMap';
   static const announcements = '/announcements';
   static const course = '/course';
+  static const onboarding = '/onboarding';
 }

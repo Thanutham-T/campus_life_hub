@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-
 class CourseCard extends StatefulWidget {
   final String courseCode;
-  final String courseName;
+  final String courseNameEn;
+  final String courseNameTh;
+  final int courseCredit;
   final String courseSection;
-  final List<Schedule> schedules;
-  final bool isRegistered;
+  final List<Schedule> courseSchedules;
+  final bool isEnrolled;
   final VoidCallback? onEnrol;
   final VoidCallback? onWithdrawn;
 
   const CourseCard({
     super.key,
     required this.courseCode,
-    required this.courseName,
+    required this.courseNameEn,
+    required this.courseNameTh,
+    required this.courseCredit,
     required this.courseSection,
-    required this.schedules,
-    required this.isRegistered,
+    required this.courseSchedules,
+    required this.isEnrolled,
     this.onEnrol,
     this.onWithdrawn,
   });
@@ -52,16 +55,16 @@ class _CourseCardState extends State<CourseCard> {
         children: [
           SlidableAction(
             onPressed: (context) {
-              if (widget.isRegistered) {
+              if (widget.isEnrolled) {
                 widget.onWithdrawn?.call();
               } else {
                 widget.onEnrol?.call();
               }
             },
-            backgroundColor: widget.isRegistered ? Colors.red : Colors.green,
+            backgroundColor: widget.isEnrolled ? Colors.red : Colors.green,
             foregroundColor: Colors.white,
-            icon: widget.isRegistered ? Icons.logout : Icons.login,
-            label: widget.isRegistered ? 'Withdrawn' : 'Enrol',
+            icon: widget.isEnrolled ? Icons.logout : Icons.login,
+            label: widget.isEnrolled ? 'Withdrawn' : 'Enrol',
           ),
         ],
       ),
@@ -69,29 +72,45 @@ class _CourseCardState extends State<CourseCard> {
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: widget.isRegistered ? Colors.yellow[100] : null,
+        color: widget.isEnrolled ? Colors.yellow[100] : null,
         child: Column(
           children: [
             ListTile(
-              title: Row(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Flexible(
-                    child: Text(
-                      widget.courseCode,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.courseCode,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          ' - ${widget.courseNameEn}',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[600]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                  Flexible(
-                    child: Text(
-                      ' - ${widget.courseName}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Text(
+                    widget.courseNameTh,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    'Credit: ${widget.courseCredit}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -100,9 +119,9 @@ class _CourseCardState extends State<CourseCard> {
                 children: [
                   Text(
                     'Section: ${widget.courseSection}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -113,9 +132,12 @@ class _CourseCardState extends State<CourseCard> {
             ),
             if (_expanded)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Column(
-                  children: widget.schedules.map((schedule) {
+                  children: widget.courseSchedules.map((schedule) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
@@ -128,15 +150,13 @@ class _CourseCardState extends State<CourseCard> {
                           ),
                           Text(
                             schedule.room ?? 'N/A',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey[600]),
                           ),
                           Text(
                             schedule.instructor,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),

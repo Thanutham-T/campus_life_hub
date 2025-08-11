@@ -3,9 +3,8 @@ import '../../models/course_model.dart';
 
 abstract class CourseDataSource {
   Future<List<CourseModel>> fetchCoursesFromSemester(String semester);
-  Future<List<CourseModel>> fetchCourseByCodeOrName(String query);
   Future<CourseModel> fetchCourseDetail(String courseId);
-  Future<void> enrolToSection(String sectionId);
+  Future<void> enrollToSection(String sectionId);
   Future<List<CourseModel>> fetchEnrolledCourses(String userId);
   Future<void> withdrawFromSection(String sectionId);
 }
@@ -15,8 +14,10 @@ class FakeCourseDataSource implements CourseDataSource {
     CourseModel(
       id: 'C001',
       code: 'CS101',
-      name: 'Introduction to Flutter',
+      nameEn: 'Introduction to Flutter',
+      nameTh: 'การแนะนำ Flutter',
       description: 'Learn Flutter basics.',
+      credit: 3,
       semester: '1/2569',
       sections: [
         CourseSectionModel(
@@ -43,8 +44,10 @@ class FakeCourseDataSource implements CourseDataSource {
     CourseModel(
       id: 'C002',
       code: 'CS102',
-      name: 'Advanced Flutter',
+      nameEn: 'Advanced Flutter',
+      nameTh: 'Flutter ขั้นสูง',
       description: 'Deep dive into Flutter.',
+      credit: 3,
       semester: '1/2569',
       sections: [
         CourseSectionModel(
@@ -90,16 +93,11 @@ class FakeCourseDataSource implements CourseDataSource {
       _mockCourses.where((course) => course.semester == semester).toList();
 
   @override
-  Future<List<CourseModel>> fetchCourseByCodeOrName(String query) async {
-    return _mockCourses.where((course) => course.code.contains(query) || course.name.contains(query)).toList();
-  }
-
-  @override
   Future<CourseModel> fetchCourseDetail(String courseId) async =>
       _mockCourses.firstWhere((c) => c.id == courseId);
 
   @override
-  Future<void> enrolToSection(String sectionId) async {
+  Future<void> enrollToSection(String sectionId) async {
     _registeredSectionIds.add(sectionId);
     print('Enrolled in section: $sectionId');
   }
@@ -116,8 +114,10 @@ class FakeCourseDataSource implements CourseDataSource {
       return CourseModel(
         id: course.id,
         code: course.code,
-        name: course.name,
+        nameEn: course.nameEn,
+        nameTh: course.nameTh,
         description: course.description,
+        credit: course.credit,
         semester: course.semester,
         sections: enrolledSections,
       );

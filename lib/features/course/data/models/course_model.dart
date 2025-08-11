@@ -10,8 +10,10 @@ class CourseModel extends CourseEntity {
   CourseModel({
     required super.id,
     required super.code,
-    required super.name,
+    required super.nameEn,
+    required super.nameTh,
     required super.description,
+    required super.credit,
     required super.sections,
     required this.semester,
   });
@@ -19,8 +21,10 @@ class CourseModel extends CourseEntity {
   factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
         id: json['id'],
         code: json['code'],
-        name: json['name'],
+        nameEn: json['nameEn'],
+        nameTh: json['nameTh'],
         description: json['description'],
+        credit: json['credit'],
         sections: (json['sections'] as List)
             .map((e) => CourseSectionModel.fromJson(e) as CourseSection)
             .toList(),
