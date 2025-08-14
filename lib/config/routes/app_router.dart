@@ -13,10 +13,12 @@ import '../../features/user/presentation/pages/register_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/course_schedule/presentation/pages/schedule_page.dart';
 import '../../features/campus_event/presentation/pages/event_page.dart';
+import '../../features/campus_event/presentation/pages/event_detail_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
 import '../../features/announcement/presentation/pages/announcement_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-
+import '../../features/campus_event/domain/entities/event_model.dart';
+import '../../features/campus_event/di/campus_event_di.dart';
 
 class AppRouter {
   AppRouter._();
@@ -46,6 +48,44 @@ class AppRouter {
           GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => const SchedulePage()),
           GoRoute(path: Routes.course, name: 'course', builder: (context, state) => RouteBuilders.buildCoursePageWithBloc()),
           GoRoute(path: Routes.events, name: 'events', builder: (context, state) => const EventPage()),
+          GoRoute(
+            path: '${Routes.events}/:eventId', 
+            name: 'event-detail', 
+            builder: (context, state) {
+              final eventId = state.pathParameters['eventId']!;
+              return FutureBuilder<Event?>(
+                future: CampusEventDI.getEventById(eventId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  
+                  if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                    // Error or event not found, redirect to events page
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      context.go(Routes.events);
+                    });
+                    return const Scaffold(
+                      body: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error, size: 64, color: Colors.red),
+                            SizedBox(height: 16),
+                            Text('ไม่พบ Event ที่ต้องการ'),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  return EventDetailPage(event: snapshot.data!);
+                },
+              );
+            },
+          ),
           GoRoute(path: Routes.studyGroups, name: 'groups', builder: (context, state) => RouteBuilders.buildStudyGroupPageWithBloc()),
           GoRoute(path: Routes.campusMap, name: 'map', builder: (context, state) => const CampusMapPage()),
           GoRoute(path: Routes.announcements, name: 'announcements', builder: (context, state) => const AnnouncementPage()),

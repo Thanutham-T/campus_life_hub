@@ -1,56 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../domain/entities/event_model.dart';
-import '../data/repositories/event_repository.dart';
+import '../data/repositories/event_repository_firestore.dart';
 
 /// Campus Event DI - Dependency Injection for Campus Event Feature
 /// ใช้เก็บ function ทั้งหมดของ Campus Event feature เพื่อความสะดวกตอนที่ต้องการจะเรียกใช้
 class CampusEventDI {
+  static final EventRepository _eventRepository = EventRepository();
 
-  /// Get all events
-  static List<Event> getAllEvents() {
-    return EventRepository.getAllEvents();
+  /// Get all events from Firestore
+  static Future<List<Event>> getAllEvents() async {
+    return await _eventRepository.getAllEvents();
   }
 
-  /// Get events by category
-  static List<Event> getEventsByCategory(EventCategory category) {
-    return EventRepository.getEventsByCategory(category);
+  /// Get events by category from Firestore
+  static Future<List<Event>> getEventsByCategory(EventCategory category) async {
+    return await _eventRepository.getEventsByCategory(category);
   }
 
-  /// Get events by status
-  static List<Event> getEventsByStatus(EventStatus status) {
-    return EventRepository.getEventsByStatus(status);
+  /// Get events by status from Firestore
+  static Future<List<Event>> getEventsByStatus(EventStatus status) async {
+    return await _eventRepository.getEventsByStatus(status);
   }
 
-  /// Get upcoming events
-  static List<Event> getUpcomingEvents() {
-    return EventRepository.getUpcomingEvents();
+  /// Get upcoming events from Firestore
+  static Future<List<Event>> getUpcomingEvents() async {
+    return await _eventRepository.getUpcomingEvents();
   }
 
-  /// Get event by ID
-  static Event? getEventById(String id) {
-    return EventRepository.getEventById(id);
+  /// Add event to Firestore
+  static Future<void> addEventToFirestore(String eventId, Map<String, dynamic> eventData) async {
+    await FirebaseFirestore.instance
+        .collection('events')
+        .doc(eventId)
+        .set(eventData);
+  }
+
+  /// Delete event from Firestore
+  static Future<void> deleteEvent(String eventId) async {
+    // ลบ event registrations ที่เกี่ยวข้องก่อน
+    final registrations = await FirebaseFirestore.instance
+        .collection('event_registrations')
+        .where('eventId', isEqualTo: eventId)
+        .get();
+    
+    // ลบ registrations ทั้งหมด
+    final batch = FirebaseFirestore.instance.batch();
+    for (final doc in registrations.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // ลบ event
+    batch.delete(FirebaseFirestore.instance.collection('events').doc(eventId));
+    
+    // Execute batch
+    await batch.commit();
+  }
+
+  /// Update event in Firestore
+  static Future<void> updateEvent(String eventId, Map<String, dynamic> eventData) async {
+    await FirebaseFirestore.instance
+        .collection('events')
+        .doc(eventId)
+        .update(eventData);
+  }
+
+  /// Get event by ID from Firestore
+  static Future<Event?> getEventById(String id) async {
+    return await _eventRepository.getEventById(id);
+  }
+
+  /// Search events from Firestore
+  static Future<List<Event>> searchEvents(String query) async {
+    return await _eventRepository.searchEvents(query);
   }
 
   /// Get academic events
-  static List<Event> getAcademicEvents() {
-    return getEventsByCategory(EventCategory.academic);
+  static Future<List<Event>> getAcademicEvents() async {
+    return await getEventsByCategory(EventCategory.academic);
   }
 
   /// Get sports events
-  static List<Event> getSportsEvents() {
-    return getEventsByCategory(EventCategory.sports);
+  static Future<List<Event>> getSportsEvents() async {
+    return await getEventsByCategory(EventCategory.sports);
   }
 
   /// Get cultural events
-  static List<Event> getCulturalEvents() {
-    return getEventsByCategory(EventCategory.cultural);
+  static Future<List<Event>> getCulturalEvents() async {
+    return await getEventsByCategory(EventCategory.cultural);
   }
 
   /// Get competition events
-  static List<Event> getCompetitionEvents() {
-    return getEventsByCategory(EventCategory.competition);
+  static Future<List<Event>> getCompetitionEvents() async {
+    return await getEventsByCategory(EventCategory.competition);
   }
 
   /// Navigate to event detail page
@@ -175,23 +219,13 @@ class CampusEventDI {
     return event.date.isAfter(DateTime.now());
   }
 
-  /// Filter events by search query
-  static List<Event> searchEvents(List<Event> events, String query) {
-    if (query.isEmpty) return events;
-    
-    return events.where((event) {
-      return event.title.toLowerCase().contains(query.toLowerCase()) ||
-             event.description.toLowerCase().contains(query.toLowerCase()) ||
-             event.location.toLowerCase().contains(query.toLowerCase());
-    }).toList();
+  /// Filter events by search query (local filtering)
+  static List<Event> searchEventsLocally(List<Event> events, String query) {
+    return _eventRepository.searchEventsLocally(events, query);
   }
 
   /// Sort events by date
   static List<Event> sortEventsByDate(List<Event> events, {bool ascending = true}) {
-    final sortedEvents = List<Event>.from(events);
-    sortedEvents.sort((a, b) => ascending 
-        ? a.date.compareTo(b.date) 
-        : b.date.compareTo(a.date));
-    return sortedEvents;
+    return _eventRepository.sortEventsByDate(events, ascending: ascending);
   }
 }
