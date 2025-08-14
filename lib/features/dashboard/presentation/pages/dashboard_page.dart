@@ -1,18 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/strings.dart';
 import '../../../../core/constants/dimens.dart';
 import '../../domain/entities/tool_item.dart';
 import '../../../../core/widgets/tool_card.dart';
-import '../../../campus_event/data/repositories/event_repository.dart';
 import '../../../campus_event/domain/entities/event_model.dart';
 import '../../../../core/utils/event_image_helper.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  List<Event> events = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupRealTimeEventListener();
+  }
+
+  void _setupRealTimeEventListener() {
+    // Listen to real-time updates from Firestore
+    FirebaseFirestore.instance
+        .collection('events')
+        .orderBy('createdAt', descending: true)
+        .limit(10) // Limit to 10 most recent events for dashboard
+        .snapshots()
+        .listen((snapshot) {
+      if (mounted) {
+        setState(() {
+          events = snapshot.docs
+              .map((doc) => Event.fromFirestore(doc.data(), doc.id))
+              .toList();
+          isLoading = false;
+        });
+      }
+    }, onError: (error) {
+      print('Error listening to events: $error');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,24 +120,36 @@ class DashboardPage extends StatelessWidget {
                   PointerDeviceKind.mouse,
                 },
               ),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.zero,
-                physics: const BouncingScrollPhysics(),
-                clipBehavior: Clip.none,
-                itemCount: EventRepository.getAllEvents().length,
-                itemBuilder: (context, index) {
-                  final event = EventRepository.getAllEvents()[index];
-                  return Container(
-                    width: 144, // Increased by 20% (from 120 to 144)
-                    margin: EdgeInsets.only(
-                      left: index == 0 ? 0 : AppDimens.marginMedium,
-                      right: index == EventRepository.getAllEvents().length - 1 ? AppDimens.marginMedium : 0,
+              child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : events.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'ไม่มี Event ในขณะนี้',
+                        style: TextStyle(
+                          fontSize: AppDimens.fontMedium,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.zero,
+                      physics: const BouncingScrollPhysics(),
+                      clipBehavior: Clip.none,
+                      itemCount: events.length,
+                      itemBuilder: (context, index) {
+                        final event = events[index];
+                        return Container(
+                          width: 144, // Increased by 20% (from 120 to 144)
+                          margin: EdgeInsets.only(
+                            left: index == 0 ? 0 : AppDimens.marginMedium,
+                            right: index == events.length - 1 ? AppDimens.marginMedium : 0,
+                          ),
+                          child: _buildDashboardEventCard(event),
+                        );
+                      },
                     ),
-                    child: _buildDashboardEventCard(event),
-                  );
-                },
-              ),
             ),
           ),
         ],
@@ -108,7 +160,7 @@ class DashboardPage extends StatelessWidget {
   Widget _buildDashboardEventCard(Event event) {
     return Builder(
       builder: (context) => GestureDetector(
-        onTap: () => context.go(Routes.events),
+        onTap: () => context.go('${Routes.events}/${event.id}'),
         child: Card(
           elevation: AppDimens.cardElevation,
           shape: RoundedRectangleBorder(
