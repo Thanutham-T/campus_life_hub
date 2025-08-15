@@ -27,7 +27,7 @@ class _MainLayoutState extends State<MainLayout> {
         context.go(Routes.dashboard);
         break;
       case 1:
-        context.go(Routes.course);
+        context.go(Routes.schedule);
         break;
       case 2:
         context.go(Routes.events);
@@ -55,7 +55,7 @@ class _MainLayoutState extends State<MainLayout> {
     
     if (location == Routes.dashboard) {
       currentIndex = 0;
-    } else if (location.startsWith(Routes.course)) {
+    } else if (location.startsWith(Routes.schedule)) {
       currentIndex = 1;
     } else if (location.startsWith(Routes.events)) {
       currentIndex = 2;
@@ -71,7 +71,7 @@ class _MainLayoutState extends State<MainLayout> {
 
     // Get page title based on current route
     String pageTitle = 'Campus Life Hub';
-    if (location.startsWith(Routes.course)) {
+    if (location.startsWith(Routes.schedule)) {
       pageTitle = 'Course Schedule';
     } else if (location.startsWith(Routes.events)) {
       pageTitle = 'Campus Events';

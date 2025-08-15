@@ -11,7 +11,7 @@ import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
 import '../../features/user/presentation/pages/register_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
-import '../../features/course_schedule/presentation/pages/schedule_page.dart';
+import '../../features/schedule/presentation/pages/schedule_page.dart';
 import '../../features/campus_event/presentation/pages/event_page.dart';
 import '../../features/campus_event/presentation/pages/event_detail_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';

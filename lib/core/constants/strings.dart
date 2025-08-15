@@ -19,6 +19,7 @@ class AppStrings {
   static const String activity = 'กิจกรรมนันทนาการ';
   
   // Tools
+  static const String course = 'Course';
   static const String schedule = 'Schedule';
   static const String announcements = 'Announcements';
   static const String map = 'Map';
