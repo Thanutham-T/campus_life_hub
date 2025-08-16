@@ -1,3 +1,4 @@
+// import 'package:campus_life_hub/config/database/setup_firestore.dart';
 import 'package:campus_life_hub/config/themes/app_theme.dart';
 import 'package:campus_life_hub/config/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,8 @@ void main() async {
   await di.initCriticalServices();
 
   FlutterNativeSplash.remove();
+  
+  // await seedCourses();
   
   runApp(const MyApp());
 
