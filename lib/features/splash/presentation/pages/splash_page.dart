@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:campus_life_hub/config/routes/app_routes.dart';
 import 'package:campus_life_hub/core/core_modules.dart';
 
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_event.dart';
+
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -76,30 +79,33 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     await Future.delayed(const Duration(milliseconds: 3000));
 
     if (mounted) {
-      // Check if first time user
-      final isFirstTime = context
-          .read<KeyValueStorageService>()
-          .isFirstTimeOnboarding();
-      // AppLogger.debug(isFirstTime.toString());
+      final isFirstTime = context.read<KeyValueStorageService>().isFirstTimeOnboarding();
 
       if (isFirstTime) {
-        if (!mounted) return;
-        context.read<KeyValueStorageService>().setFirstTimeOnboarding(false);
-        // AppLogger.debug(context.read<KeyValueStorageService>().isFirstTimeOnboarding().toString());
-        context.go(Routes.onboarding);
-        return;
+      if (!mounted) return;
+      context.read<KeyValueStorageService>().setFirstTimeOnboarding(false);
+      context.go(Routes.onboarding);
+      return;
       }
 
       final user = FirebaseAuth.instance.currentUser;
 
-      // AppLogger.debug('Auth state: $user');
-
       if (!mounted) return;
       if (user != null) {
-        user.getIdToken(true);
-        context.go(Routes.dashboard);
+        try {
+          final idTokenResult = await user.getIdTokenResult();
+          final expirationTime = idTokenResult.expirationTime;
+          final isTokenExpired = expirationTime != null && expirationTime.isBefore(DateTime.now());
+
+          if (!isTokenExpired) {
+            context.go(Routes.dashboard);
+          } else {
+            context.read<AuthBloc>().add(LogoutRequested());
+          }
+        } catch (e) {
+          context.read<AuthBloc>().add(LogoutRequested());
+        }
       } else {
-        FirebaseAuth.instance.signOut();
         context.go(Routes.login);
       }
     }
