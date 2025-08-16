@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 abstract class CourseEvent {}
 
 class LoadAllCourses extends CourseEvent {

@@ -1,7 +1,5 @@
-import 'package:campus_life_hub/core/logging/logging.dart';
 import 'package:campus_life_hub/features/course/domain/entities/course_entity.dart';
 import 'package:campus_life_hub/features/course/domain/usecases/get_enroll_course.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:campus_life_hub/features/course/domain/usecases/get_course_from_semester.dart';
