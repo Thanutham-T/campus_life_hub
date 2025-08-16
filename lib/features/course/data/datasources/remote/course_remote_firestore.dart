@@ -14,6 +14,7 @@ abstract class CourseDataSource {
 
 class CourseRemoteFirestore implements CourseDataSource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
   @override
   Future<List<CourseModel>> fetchCoursesFromSemester(String semester) async {
     final coursesSnapshot = await _firestore
@@ -23,18 +24,14 @@ class CourseRemoteFirestore implements CourseDataSource {
 
     if (coursesSnapshot.docs.isEmpty) throw Exception("Course not found");
 
-    final courses = <CourseModel>[];
-
-    for (var courseDoc in coursesSnapshot.docs) {
+    final courseFutures = coursesSnapshot.docs.map((courseDoc) async {
       final courseData = courseDoc.data();
       courseData['id'] = courseDoc.id;
 
       final sectionsSnapshot =
           await courseDoc.reference.collection('course_sections').get();
 
-      final sectionModels = <CourseSectionModel>[];
-
-      for (var sectionDoc in sectionsSnapshot.docs) {
+      final sectionFutures = sectionsSnapshot.docs.map((sectionDoc) async {
         var sectionData = sectionDoc.data();
         sectionData['id'] = sectionDoc.id;
 
@@ -48,14 +45,16 @@ class CourseRemoteFirestore implements CourseDataSource {
         }).toList();
 
         sectionData['schedules'] = scheduleModels;
-        sectionModels.add(CourseSectionModel.fromAny(sectionData));
-      }
+        return CourseSectionModel.fromAny(sectionData);
+      }).toList();
 
+      final sectionModels = await Future.wait(sectionFutures);
       courseData['sections'] = sectionModels;
-      courses.add(CourseModel.fromJson(courseData));
-    }
 
-    return courses;
+      return CourseModel.fromJson(courseData);
+    }).toList();
+
+    return Future.wait(courseFutures);
   }
 
   @override
@@ -72,18 +71,14 @@ class CourseRemoteFirestore implements CourseDataSource {
 
     if (coursesSnapshot.docs.isEmpty) throw Exception("Course not found");
 
-    final courses = <CourseModel>[];
-
-    for (var courseDoc in coursesSnapshot.docs) {
+    final courseFutures = coursesSnapshot.docs.map((courseDoc) async {
       final courseData = courseDoc.data();
       courseData['id'] = courseDoc.id;
 
       final sectionsSnapshot =
           await courseDoc.reference.collection('course_sections').get();
 
-      final sectionModels = <CourseSectionModel>[];
-
-      for (var sectionDoc in sectionsSnapshot.docs) {
+      final sectionFutures = sectionsSnapshot.docs.map((sectionDoc) async {
         var sectionData = sectionDoc.data();
         sectionData['id'] = sectionDoc.id;
 
@@ -97,20 +92,22 @@ class CourseRemoteFirestore implements CourseDataSource {
         }).toList();
 
         sectionData['schedules'] = scheduleModels;
-        sectionModels.add(CourseSectionModel.fromAny(sectionData));
-      }
+        return CourseSectionModel.fromAny(sectionData);
+      }).toList();
 
+      final sectionModels = await Future.wait(sectionFutures);
       courseData['sections'] = sectionModels;
-      courses.add(CourseModel.fromJson(courseData));
-    }
 
-    return courses;
+      return CourseModel.fromJson(courseData);
+    }).toList();
+
+    return Future.wait(courseFutures);
   }
 
   @override
   Future<CourseModel> fetchCourseDetail(String courseId) async {
-    final coursesSnapshot = await _firestore
-      .collection('courses').doc(courseId).get();
+    final coursesSnapshot =
+        await _firestore.collection('courses').doc(courseId).get();
 
     if (!coursesSnapshot.exists) throw Exception("Course not found");
 
@@ -121,9 +118,7 @@ class CourseRemoteFirestore implements CourseDataSource {
     final sectionsSnapshot =
         await coursesSnapshot.reference.collection('course_sections').get();
 
-    final sectionModels = <CourseSectionModel>[];
-
-    for (var sectionDoc in sectionsSnapshot.docs) {
+    final sectionFutures = sectionsSnapshot.docs.map((sectionDoc) async {
       var sectionData = sectionDoc.data();
       sectionData['id'] = sectionDoc.id;
 
@@ -137,9 +132,10 @@ class CourseRemoteFirestore implements CourseDataSource {
       }).toList();
 
       sectionData['schedules'] = scheduleModels;
-      sectionModels.add(CourseSectionModel.fromAny(sectionData));
-    }
+      return CourseSectionModel.fromAny(sectionData);
+    }).toList();
 
+    final sectionModels = await Future.wait(sectionFutures);
     courseData['sections'] = sectionModels;
 
     return CourseModel.fromJson(courseData);
@@ -157,34 +153,39 @@ class CourseRemoteFirestore implements CourseDataSource {
 
   @override
   Future<List<CourseModel>> fetchEnrolledCourses(String userId) async {
-      final query = await _firestore.collection('course_enrollments').where('userId', isEqualTo: userId).get();
-      final courseIds = query.docs.map((doc) => doc['courseId']).toList();
-      final sectionIds = query.docs.map((doc) => doc['sectionId']).toList();
+    final query = await _firestore
+        .collection('course_enrollments')
+        .where('userId', isEqualTo: userId)
+        .get();
 
-      final courses = <CourseModel>[];
-      for (int i = 0; i < courseIds.length; i++) {
-        final course = await fetchCourseDetail(courseIds[i]);
-        final enrolledSectionId = sectionIds[i];
-        final filteredSections = course.sections
-        .where((section) => section.id == enrolledSectionId)
-        .toList();
-        if (filteredSections.isNotEmpty) {
-          courses.add(course.copyWith(sections: filteredSections));
-        }
+    final courseIds = query.docs.map((doc) => doc['courseId']).toList();
+    final sectionIds = query.docs.map((doc) => doc['sectionId']).toList();
+
+    final courseFutures = List.generate(courseIds.length, (i) async {
+      final course = await fetchCourseDetail(courseIds[i]);
+      final enrolledSectionId = sectionIds[i];
+      final filteredSections =
+          course.sections.where((s) => s.id == enrolledSectionId).toList();
+      if (filteredSections.isNotEmpty) {
+        return course.copyWith(sections: filteredSections);
       }
-      return courses;
+      return null;
+    });
+
+    final courses = await Future.wait(courseFutures);
+    return courses.whereType<CourseModel>().toList();
   }
 
   @override
   Future<void> withdrawFromSection(String userId, String sectionId) async {
-      await _firestore.collection('course_enrollments')
-          .where('sectionId', isEqualTo: sectionId)
-          .where('userId', isEqualTo: userId)
-          .get()
-          .then((snapshot) {
-        for (var doc in snapshot.docs) {
-          doc.reference.delete();
-        }
-      });
+    final snapshot = await _firestore
+        .collection('course_enrollments')
+        .where('sectionId', isEqualTo: sectionId)
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
   }
 }
