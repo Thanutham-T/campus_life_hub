@@ -1,5 +1,6 @@
 import 'package:campus_life_hub/features/course/presentation/bloc/course_event.dart';
 import 'package:campus_life_hub/features/course/presentation/bloc/course_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/course_bloc.dart';
@@ -14,14 +15,19 @@ class CoursePage extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: TextField(
+            child: TextField(
             decoration: const InputDecoration(
               hintText: 'Search courses...',
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(),
             ),
             onChanged: (query) {
-              context.read<CourseBloc>().add(SearchCourses(query));
+              final bloc = context.read<CourseBloc>();
+              final state = bloc.state;
+              final isEnrolledView = state is CourseLoaded && state.isEnrolledView == true;
+              bloc.add(
+              SearchCourses(query, isEnrolledView, FirebaseAuth.instance.currentUser!.uid),
+              );
             },
           ),
         ),
@@ -53,11 +59,11 @@ class CoursePage extends StatelessWidget {
                   onChanged: (bool? value) {
                     if (value == true) {
                       context.read<CourseBloc>().add(
-                        LoadEnrolledCourses('1'),
+                        LoadEnrolledCourses(FirebaseAuth.instance.currentUser!.uid),
                       );
                     } else {
                       context.read<CourseBloc>().add(
-                        LoadCourseWithEnrollStatus('1'),
+                        LoadCourseWithEnrollStatus(FirebaseAuth.instance.currentUser!.uid),
                       );
                     }
                   },
@@ -74,7 +80,7 @@ class CoursePage extends StatelessWidget {
                 } else if (state is CourseError) {
                   return Center(child: Text('Error: ${state.message}'));
                 } else if (state is CourseLoaded) {
-                  final courses = state.courses;
+                  final courses = state.queryCourses;
                   if (courses.isEmpty) {
                     return const Center(
                       child: Text('No courses found for the current term.'),
@@ -127,14 +133,16 @@ class CoursePage extends StatelessWidget {
                                     );
                                   }
                                   : () {
+                                    var userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                     context.read<CourseBloc>().add(
-                                    EnrollToCourse(section.id),
+                                      EnrollToCourse(course.id, section.id, userId),
                                     );
                                   },
                               onWithdrawn: section.isEnrolled
                                   ? () {
+                                      var userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                       context.read<CourseBloc>().add(
-                                        WithdrawFromCourse(section.id),
+                                        WithdrawFromCourse(userId, section.id),
                                       );
                                     }
                                   : null,

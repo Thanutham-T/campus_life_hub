@@ -5,5 +5,5 @@ class EnrollCourse {
   final CourseRepository repo;
   EnrollCourse(this.repo);
 
-  Future<void> call(String sectionId) => repo.enrollCourse(sectionId);
+  Future<void> call(String courseId, String sectionId, String userId) => repo.enrollCourse(courseId, sectionId, userId);
 }

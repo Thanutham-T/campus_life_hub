@@ -1,4 +1,7 @@
+import 'package:campus_life_hub/core/logging/logging.dart';
+import 'package:campus_life_hub/features/course/domain/entities/course_entity.dart';
 import 'package:campus_life_hub/features/course/domain/usecases/get_enroll_course.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:campus_life_hub/features/course/domain/usecases/get_course_from_semester.dart';
@@ -29,7 +32,8 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
       emit(CourseLoading());
       try {
         final courses = await getCourseFromSemester(event.semester);
-        emit(CourseLoaded(courses, isEnrolledView: false));
+        final queryCourses = courses;
+        emit(CourseLoaded(courses, queryCourses, isEnrolledView: false));
       } catch (e) {
         emit(CourseError(e.toString()));
       }
@@ -39,7 +43,8 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
       emit(CourseLoading());
       try {
         final courses = await getEnrolledCourses(event.userId);
-        emit(CourseLoaded(courses, isEnrolledView: true));
+        final queryCourses = courses;
+        emit(CourseLoaded(courses, queryCourses, isEnrolledView: true));
       } catch (e) {
         emit(CourseError(e.toString()));
       }
@@ -50,26 +55,19 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
       if (currentState is CourseLoaded) {
         emit(CourseLoading());
         try {
-          final query = event.query.trim().toLowerCase();
-          if (query.isEmpty) {
-            if (currentState.isEnrolledView) {
-              final courses = await getEnrolledCourses('1');
-              emit(CourseLoaded(courses, isEnrolledView: true));
-            } else {
-              final courses = await getCourseWithEnrollStatus('1');
-              emit(CourseLoaded(courses, isEnrolledView: false));
-            }
+          final allCourses = currentState.courses;
+          List<CourseEntity> queryCourses;
+          if (event.query.isEmpty) {
+            queryCourses = allCourses;
           } else {
-            final filteredCourses = currentState.courses.where((course) {
-              return course.nameEn.toLowerCase().contains(query) || course.nameTh.toLowerCase().contains(query) || course.code.toLowerCase().contains(query);
+            final query = event.query.trim().toLowerCase();
+            queryCourses = allCourses.where((course) {
+              return course.nameEn.toLowerCase().contains(query) ||
+              course.nameTh.toLowerCase().contains(query) ||
+              course.code.toLowerCase().contains(query);
             }).toList();
-            emit(
-              CourseLoaded(
-                filteredCourses,
-                isEnrolledView: currentState.isEnrolledView,
-              ),
-            );
           }
+          emit(CourseLoaded(allCourses, queryCourses, isEnrolledView: event.isEnrolledView));
         } catch (e) {
           emit(CourseError(e.toString()));
         }
@@ -79,10 +77,11 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     on<EnrollToCourse>((event, emit) async {
       emit(CourseEnrolling());
       try {
-        await enrollCourse(event.sectionId);
+        await enrollCourse(event.courseId, event.sectionId, event.userId);
         emit(CourseSuccess());
-        final courses = await getCourseWithEnrollStatus('1');
-        emit(CourseLoaded(courses));
+        final courses = await getCourseWithEnrollStatus(event.userId);
+        final queryCourses = courses;
+        emit(CourseLoaded(courses, queryCourses));
       } catch (e) {
         emit(CourseError(e.toString()));
       }
@@ -91,10 +90,11 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     on<WithdrawFromCourse>((event, emit) async {
       emit(CourseLoading());
       try {
-        await withdrawnCourse(event.sectionId);
+        await withdrawnCourse(event.sectionId, event.userId);
         emit(CourseSuccess());
-        final courses = await getCourseWithEnrollStatus('1');
-        emit(CourseLoaded(courses));
+        final courses = await getCourseWithEnrollStatus(event.userId);
+        final queryCourses = courses;
+        emit(CourseLoaded(courses, queryCourses));
       } catch (e) {
         emit(CourseError(e.toString()));
       }
@@ -104,7 +104,8 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
       emit(CourseLoading());
       try {
         final courses = await getCourseWithEnrollStatus(event.userId);
-        emit(CourseLoaded(courses, isEnrolledView: false));
+        final queryCourses = courses;
+        emit(CourseLoaded(courses, queryCourses, isEnrolledView: false));
       } catch (e) {
         emit(CourseError(e.toString()));
       }

@@ -32,7 +32,7 @@ class CourseCard extends StatefulWidget {
 class Schedule {
   final String day;
   final String time;
-  final String instructor;
+  final List<dynamic> instructor;
   final String? room;
 
   Schedule({
@@ -154,7 +154,7 @@ class _CourseCardState extends State<CourseCard> {
                                 ?.copyWith(color: Colors.grey[600]),
                           ),
                           Text(
-                            schedule.instructor,
+                            schedule.instructor.join(', '),
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.w500),
                           ),

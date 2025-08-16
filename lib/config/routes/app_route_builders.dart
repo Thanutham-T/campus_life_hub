@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -40,7 +41,7 @@ class RouteBuilders {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return BlocProvider.value(
-            value: snapshot.data!..add(LoadCourseWithEnrollStatus('1')),
+            value: snapshot.data!..add(LoadCourseWithEnrollStatus(FirebaseAuth.instance.currentUser!.uid)),
             child: const CoursePage(),
           );
         } else {

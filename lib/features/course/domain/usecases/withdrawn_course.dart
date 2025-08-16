@@ -5,5 +5,5 @@ class WithdrawnCourse {
   final CourseRepository repo;
   WithdrawnCourse(this.repo);
 
-  Future<void> call(String sectionId) => repo.withdrawFromSection(sectionId);
+  Future<void> call(String userId, String sectionId) => repo.withdrawFromSection(userId, sectionId);
 }

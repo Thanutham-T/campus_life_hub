@@ -1,7 +1,7 @@
 import 'package:campus_life_hub/features/course/domain/entities/course_entity.dart';
 import 'package:campus_life_hub/features/course/domain/repositories/course_repository.dart';
 
-import '../datasources/local/course_local_datasource.dart';
+import '../datasources/remote/course_remote_firestore.dart';
 
 
 class CourseRepositoryImpl implements CourseRepository {
@@ -31,14 +31,14 @@ class CourseRepositoryImpl implements CourseRepository {
   }
 
   @override
-  Future<void> enrollCourse(String sectionId) async => await dataSource.enrollToSection(sectionId);
+  Future<void> enrollCourse(String userId, String courseId, String sectionId) async => await dataSource.enrollToSection(userId, courseId, sectionId);
 
   @override
-  Future<void> withdrawFromSection(String sectionId) async => await dataSource.withdrawFromSection(sectionId);
+  Future<void> withdrawFromSection(String userId, String sectionId) async => await dataSource.withdrawFromSection(userId, sectionId);
 
   @override
   Future<List<CourseEntity>> getCoursesWithEnrollStatus(String userId) async {
-    final courses = await dataSource.fetchCoursesFromSemester('1/2569'); // Example semester, adjust as needed
+    final courses = await dataSource.fetchCoursesFromSemester('1/2567'); // Example semester, adjust as needed
     final enrolledCourses = await dataSource.fetchEnrolledCourses(userId);
 
     return courses.map((course) {
