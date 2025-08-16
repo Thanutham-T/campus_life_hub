@@ -13,7 +13,6 @@ abstract class CourseDataSource {
 class CourseRemoteFirestore implements CourseDataSource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// 🔹 Common pattern: build Course with sections & schedules
   Future<CourseModel> _buildCourseWithSectionsAndSchedules(
       DocumentSnapshot<Map<String, dynamic>> courseDoc) async {
     final courseData = courseDoc.data();
