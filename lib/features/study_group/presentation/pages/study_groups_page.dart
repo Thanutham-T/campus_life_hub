@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import '../../domain/entities/study_group.dart';
 import '../../domain/repositories/study_group_repository.dart';
@@ -8,9 +9,6 @@ import '../bloc/study_group_bloc.dart';
 import '../bloc/study_group_state.dart';
 import '../bloc/study_group_event.dart';
 import '../widgets/create_group_dialog.dart';
-import 'study_group_chat_page.dart';
-import '../bloc/chat_bloc.dart';
-import '../bloc/chat_event.dart';
 
 class StudyGroupsPage extends StatefulWidget {
   const StudyGroupsPage({super.key});
@@ -386,19 +384,7 @@ class _StudyGroupsPageState extends State<StudyGroupsPage> {
               child: isMember
                   ? ElevatedButton.icon(
                       onPressed: () {
-                        // Navigate to chat
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BlocProvider(
-                              create: (_) => ChatBloc(repository: GetIt.instance())..add(GetChatMessagesEvent(group.id)),
-                              child: StudyGroupChatPage(
-                                studyGroupId: group.id,
-                                groupName: group.name,
-                              ),
-                            ),
-                          ),
-                        );
+                        context.go('/studyGroups/${group.id}/chat?groupName=${Uri.encodeComponent(group.name)}');
                       },
                       icon: const Icon(Icons.chat),
                       label: const Text('เข้าห้องแชท'),
