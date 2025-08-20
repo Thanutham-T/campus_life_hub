@@ -8,8 +8,10 @@ abstract final class Routes {
   static const schedule = '/schedule';
   static const events = '/events';
   static const studyGroups = '/studyGroups';
+  static const studyGroupChat = '/studyGroups/:groupId/chat';
   static const campusMap = '/campusMap';
   static const announcements = '/announcements';
   static const course = '/course';
   static const onboarding = '/onboarding';
+  static const settings = '/settings';
 }
