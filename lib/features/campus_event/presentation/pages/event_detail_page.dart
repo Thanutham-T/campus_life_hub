@@ -11,6 +11,7 @@ import '../../domain/services/event_registration_service.dart';
 import '../../../user/data/datasources/remote/firestore_data_source.dart';
 import '../../di/campus_event_di.dart';
 import 'edit_event_page.dart';
+import '../widgets/share_event_dialog.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -163,6 +164,18 @@ class _EventDetailPageState extends State<EventDetailPage> {
               ),
             ),
             actions: [
+              // Share button
+              IconButton(
+                onPressed: () => _showShareDialog(context),
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.share, color: Colors.white, size: 20),
+                ),
+              ),
               // Registration count badge
               Container(
                 margin: const EdgeInsets.all(8.0),
@@ -718,6 +731,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showShareDialog(BuildContext context) {
+    final event = _currentEvent ?? widget.event;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ShareEventDialog(event: event),
     );
   }
 

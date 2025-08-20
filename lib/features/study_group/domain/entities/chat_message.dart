@@ -1,3 +1,8 @@
+enum MessageType {
+  text,
+  event,
+}
+
 class ChatMessage {
   final String id;
   final String groupId;
@@ -6,6 +11,8 @@ class ChatMessage {
   final String text;
   final DateTime timestamp;
   final String? replyToId;
+  final MessageType messageType;
+  final Map<String, dynamic>? eventData;
 
   const ChatMessage({
     required this.id,
@@ -15,6 +22,8 @@ class ChatMessage {
     required this.text,
     required this.timestamp,
     this.replyToId,
+    this.messageType = MessageType.text,
+    this.eventData,
   });
 
   ChatMessage copyWith({
@@ -25,6 +34,8 @@ class ChatMessage {
     String? text,
     DateTime? timestamp,
     String? replyToId,
+    MessageType? messageType,
+    Map<String, dynamic>? eventData,
   }) {
     return ChatMessage(
       id: id ?? this.id,
@@ -34,8 +45,11 @@ class ChatMessage {
       text: text ?? this.text,
       timestamp: timestamp ?? this.timestamp,
       replyToId: replyToId ?? this.replyToId,
+      messageType: messageType ?? this.messageType,
+      eventData: eventData ?? this.eventData,
     );
   }
 
   bool get isReply => replyToId != null;
+  bool get isEventMessage => messageType == MessageType.event;
 }
