@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get_it/get_it.dart';
 import '../../domain/entities/chat_message.dart';
+import '../../domain/repositories/study_group_repository.dart';
 import '../bloc/chat_bloc.dart';
 import '../bloc/chat_state.dart';
 import '../bloc/chat_event.dart';
@@ -169,6 +171,79 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
     _scrollToBottom();
   }
 
+  void _showLeaveGroupDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ออกจากกลุ่ม'),
+          content: const Text(
+            'คุณแน่ใจหรือไม่ว่าต้องการออกจากกลุ่มนี้? '
+            'คุณจะไม่สามารถดูข้อความหรือเข้าร่วมกลุ่มนี้ได้อีก'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _leaveGroup();
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('ออกจากกลุ่ม'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _leaveGroup() async {
+    try {
+      // Use repository/bloc instead of direct Firestore call
+      final repository = GetIt.instance<StudyGroupRepository>();
+      final result = await repository.leaveStudyGroup(widget.studyGroupId, _currentUserId);
+      
+      result.fold(
+        (error) {
+          // Show error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('เกิดข้อผิดพลาด: $error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        (_) {
+          // Success - show message and navigate back
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('ออกจากกลุ่มเรียบร้อยแล้ว'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.of(context).pop(); // Go back to previous page
+          }
+        },
+      );
+    } catch (e) {
+      // Handle unexpected errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('เกิดข้อผิดพลาดไม่คาดคิด: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -191,6 +266,28 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
         foregroundColor: Colors.white,
         elevation: 1,
         centerTitle: false,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (String value) {
+              if (value == 'leave_group') {
+                _showLeaveGroupDialog();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'leave_group',
+                child: Row(
+                  children: [
+                    Icon(Icons.exit_to_app, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('ออกจากกลุ่ม', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [
