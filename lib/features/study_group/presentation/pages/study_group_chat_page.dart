@@ -4,8 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/chat_message.dart';
 import '../bloc/chat_bloc.dart';
-import '../bloc/chat_state.dart';
 import '../bloc/chat_event.dart';
+import '../bloc/chat_state.dart';
+import '../widgets/chat_message_widget.dart';
 
 class StudyGroupChatPage extends StatefulWidget {
   final String studyGroupId;
@@ -15,7 +16,7 @@ class StudyGroupChatPage extends StatefulWidget {
     super.key, 
     required this.studyGroupId,
     this.groupName,
-  });  @override
+  });
   State<StudyGroupChatPage> createState() => _StudyGroupChatPageState();
 }
 
@@ -26,20 +27,6 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
   // Get current user ID
   String get _currentUserId => FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
   
-  // Get current user name
-  String get _currentUserName {
-    final user = FirebaseAuth.instance.currentUser;
-    print('Firebase User: ${user?.uid}');
-    print('Display Name: ${user?.displayName}');
-    print('Email: ${user?.email}');
-    
-    // Return display name first, then email prefix, then UID prefix, then fallback
-    return user?.displayName ?? 
-           user?.email?.split('@')[0] ?? 
-           (user?.uid.length != null && user!.uid.length > 6 ? user.uid.substring(0, 6) : null) ??
-           'ผู้ใช้';
-  }
-
   // Get user name from Firestore (async version)
   Future<String> _getCurrentUserNameFromFirestore() async {
     try {
@@ -78,20 +65,6 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
       print('Error getting user name from Firestore: $e');
       return FirebaseAuth.instance.currentUser?.email?.split('@')[0] ?? 'ผู้ใช้';
     }
-  }
-
-  // Helper method to get user name for display (for messages that might not have proper senderName)
-  String _getDisplayName(String senderName, String senderId) {
-    // If senderName is empty, just default values, or "คุณ", try to create a better name
-    if (senderName.isEmpty || senderName == 'ผู้ใช้' || senderName == 'คุณ') {
-      // If it's current user, use current user name (sync version)
-      if (senderId == _currentUserId) {
-        return _currentUserName;
-      }
-      // For other users, use partial UID as fallback
-      return senderId.length > 6 ? senderId.substring(0, 6) : senderId;
-    }
-    return senderName;
   }
 
   @override
@@ -171,32 +144,11 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Hero(
-          tag: 'group_title_${widget.studyGroupId}',
-          child: Material(
-            color: Colors.transparent,
-            child: Text(
-              widget.groupName ?? 'กลุ่มศึกษา',
-              style: const TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 1,
-        centerTitle: false,
-      ),
-      body: Column(
-        children: [
-          // Chat messages
-          Expanded(
-            child: BlocBuilder<ChatBloc, ChatState>(
+    return Column(
+      children: [
+        // Chat messages
+        Expanded(
+          child: BlocBuilder<ChatBloc, ChatState>(
               builder: (context, state) {
                 if (state is ChatLoading) {
                   return const Center(child: CircularProgressIndicator());
@@ -212,100 +164,12 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
                       final message = state.messages[index];
-                      final isCurrentUser = message.senderId == _currentUserId; // ใช้ current user ID จริง
-                      print('Message: ${message.senderId} vs Current: $_currentUserId = $isCurrentUser');
+                      final isCurrentUser = message.senderId == _currentUserId;
                       
-                      return Align(
-                        alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isCurrentUser 
-                              ? Theme.of(context).primaryColor
-                              : Colors.grey[300],
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(18),
-                              topRight: const Radius.circular(18),
-                              bottomLeft: isCurrentUser ? const Radius.circular(18) : const Radius.circular(4),
-                              bottomRight: isCurrentUser ? const Radius.circular(4) : const Radius.circular(18),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (!isCurrentUser) ...[
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: _getUserColor(message.senderId),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          _getDisplayName(message.senderName, message.senderId).isNotEmpty 
-                                            ? _getDisplayName(message.senderName, message.senderId)[0].toUpperCase()
-                                            : 'U',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _getDisplayName(message.senderName, message.senderId),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getUserColor(message.senderId),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                              ],
-                              Text(
-                                message.text,
-                                style: TextStyle(
-                                  color: isCurrentUser ? Colors.white : Colors.black87,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    _formatTime(message.timestamp),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: isCurrentUser 
-                                        ? Colors.white.withOpacity(0.7)
-                                        : Colors.grey[600],
-                                    ),
-                                  ),
-                                  if (isCurrentUser) ...[
-                                    const SizedBox(width: 4),
-                                    Icon(
-                                      Icons.done_all,
-                                      size: 12,
-                                      color: Colors.white.withOpacity(0.7),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                      return ChatMessageWidget(
+                        message: message,
+                        isCurrentUser: isCurrentUser,
+                        currentUserId: _currentUserId,
                       );
                     },
                   );
@@ -374,39 +238,6 @@ class _StudyGroupChatPageState extends State<StudyGroupChatPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-    
-    if (difference.inDays > 0) {
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} ชั่วโมงที่แล้ว';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} นาทีที่แล้ว';
-    } else {
-      return 'เมื่อสักครู่';
-    }
-  }
-
-  Color _getUserColor(String userId) {
-    final colors = [
-      Colors.red,
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-      Colors.indigo,
-      Colors.brown,
-    ];
-    
-    // Generate consistent color based on userId
-    final hash = userId.hashCode;
-    return colors[hash.abs() % colors.length];
+      );
   }
 }

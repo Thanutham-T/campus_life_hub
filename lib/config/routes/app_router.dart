@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../layouts/main_layout.dart';
 import '../routes/app_routes.dart';
@@ -17,6 +18,12 @@ import '../../features/campus_event/presentation/pages/event_detail_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
 import '../../features/announcement/presentation/pages/announcement_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/study_group/presentation/pages/study_group_chat_page.dart';
+import '../../features/study_group/presentation/bloc/chat_bloc.dart';
+import '../../features/study_group/presentation/bloc/chat_event.dart';
+import '../../features/study_group/domain/repositories/chat_repository.dart';
+import '../di/injector.dart' as di;
 import '../../features/campus_event/domain/entities/event_model.dart';
 import '../../features/campus_event/di/campus_event_di.dart';
 
@@ -87,8 +94,25 @@ class AppRouter {
             },
           ),
           GoRoute(path: Routes.studyGroups, name: 'groups', builder: (context, state) => RouteBuilders.buildStudyGroupPageWithBloc()),
+          GoRoute(
+            path: '/studyGroups/:groupId/chat',
+            name: 'study-group-chat',
+            builder: (context, state) {
+              final groupId = state.pathParameters['groupId']!;
+              final groupName = state.uri.queryParameters['groupName'] ?? 'กลุ่มศึกษา';
+              return BlocProvider(
+                create: (_) => ChatBloc(repository: di.sl<ChatRepository>())
+                  ..add(GetChatMessagesEvent(groupId)),
+                child: StudyGroupChatPage(
+                  studyGroupId: groupId,
+                  groupName: groupName,
+                ),
+              );
+            },
+          ),
           GoRoute(path: Routes.campusMap, name: 'map', builder: (context, state) => const CampusMapPage()),
           GoRoute(path: Routes.announcements, name: 'announcements', builder: (context, state) => const AnnouncementPage()),
+          GoRoute(path: Routes.settings, name: 'settings', builder: (context, state) => const SettingsPage()),
         ]
       ),
     ],

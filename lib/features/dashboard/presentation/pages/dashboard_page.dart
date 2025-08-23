@@ -255,24 +255,7 @@ class _DashboardPageState extends State<DashboardPage> {
         title: AppStrings.setting,
         icon: Icons.settings,
         backgroundColor: Colors.grey,
-        onTap: () {
-          // Show settings dialog
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Settings'),
-                content: const Text('Settings feature will be implemented soon.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
+        onTap: () => context.go(Routes.settings),
       ),
     ];
 

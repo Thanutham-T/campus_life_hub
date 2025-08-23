@@ -10,6 +10,8 @@ class ChatMessageModel extends ChatMessage {
     required super.text,
     required super.timestamp,
     super.replyToId,
+    super.messageType = MessageType.text,
+    super.eventData,
   });
 
   factory ChatMessageModel.fromFirestore(DocumentSnapshot doc) {
@@ -24,6 +26,11 @@ class ChatMessageModel extends ChatMessage {
                  (data['timestamp'] as Timestamp?)?.toDate() ?? 
                  DateTime.now(),
       replyToId: data['replyToId'],
+      messageType: MessageType.values.firstWhere(
+        (type) => type.toString() == 'MessageType.${data['messageType'] ?? 'text'}',
+        orElse: () => MessageType.text,
+      ),
+      eventData: data['eventData'] as Map<String, dynamic>?,
     );
   }
 
@@ -36,6 +43,8 @@ class ChatMessageModel extends ChatMessage {
       text: message.text,
       timestamp: message.timestamp,
       replyToId: message.replyToId,
+      messageType: message.messageType,
+      eventData: message.eventData,
     );
   }
 
@@ -47,7 +56,9 @@ class ChatMessageModel extends ChatMessage {
       'text': text,
       'timestamp': Timestamp.fromDate(timestamp),
       'createdAt': Timestamp.fromDate(timestamp), // เพิ่ม createdAt สำหรับ orderBy
+      'messageType': messageType.toString().split('.').last,
       if (replyToId != null) 'replyToId': replyToId,
+      if (eventData != null) 'eventData': eventData,
     };
   }
 
@@ -60,6 +71,8 @@ class ChatMessageModel extends ChatMessage {
     String? text,
     DateTime? timestamp,
     String? replyToId,
+    MessageType? messageType,
+    Map<String, dynamic>? eventData,
   }) {
     return ChatMessageModel(
       id: id ?? this.id,
@@ -69,6 +82,8 @@ class ChatMessageModel extends ChatMessage {
       text: text ?? this.text,
       timestamp: timestamp ?? this.timestamp,
       replyToId: replyToId ?? this.replyToId,
+      messageType: messageType ?? this.messageType,
+      eventData: eventData ?? this.eventData,
     );
   }
 
