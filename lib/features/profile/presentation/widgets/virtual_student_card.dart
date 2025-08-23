@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/services/profile_image_service.dart';
 import '../../../user/domain/entities/profile_entity.dart';
+import '../../../user/presentation/bloc/auth_bloc.dart';
+import '../../../user/presentation/bloc/auth_event.dart';
 
 class VirtualStudentCard extends StatefulWidget {
   final ProfileEntity profile;
@@ -39,6 +43,15 @@ class _VirtualStudentCardState extends State<VirtualStudentCard>
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  void _showImageUploadDialog(BuildContext context) {
+    final profileImageService = ProfileImageService();
+    
+    profileImageService.showImageSourceDialog(context, (imageFile) async {
+      // Show loading state
+      context.read<AuthBloc>().add(ProfileImageUploadRequested(imagePath: imageFile.path));
+    });
   }
 
   void _flipCard() {
@@ -265,17 +278,74 @@ class _VirtualStudentCardState extends State<VirtualStudentCard>
                       const SizedBox(width: 12),
                       
                       // Right side - Avatar
-                      Container(
-                        width: 110,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Colors.grey[600],
+                      GestureDetector(
+                        onTap: () => _showImageUploadDialog(context),
+                        child: Container(
+                          width: 110,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Stack(
+                            children: [
+                              // Profile Image
+                              widget.profile.profileImageUrl != null && 
+                                     widget.profile.profileImageUrl!.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      widget.profile.profileImageUrl!,
+                                      width: 110,
+                                      height: 150,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Icon(
+                                          Icons.person,
+                                          size: 60,
+                                          color: Colors.grey[600],
+                                        );
+                                      },
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded /
+                                                    loadingProgress.expectedTotalBytes!
+                                                : null,
+                                            color: Colors.white,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: Colors.grey[600],
+                                  ),
+                              
+                              // Camera icon overlay
+                              Positioned(
+                                bottom: 8,
+                                right: 8,
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.6),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

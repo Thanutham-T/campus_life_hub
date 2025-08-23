@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/core_modules.dart';
+import '../../../../core/services/profile_image_service.dart';
 import '../../domain/usecases/get_current_user.dart';
 import '../../domain/usecases/login_user.dart';
 import '../../domain/usecases/register_user.dart';
@@ -18,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UpdateProfile _updateProfile;
   final ChangePassword _changePassword;
   final ResetPassword _resetPassword;
+  final ProfileImageService _profileImageService;
 
   AuthBloc({
     required GetCurrentUser getCurrentUser,
@@ -27,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required UpdateProfile updateProfile,
     required ChangePassword changePassword,
     required ResetPassword resetPassword,
+    required ProfileImageService profileImageService,
   })  : _getCurrentUser = getCurrentUser,
         _loginUser = loginUser,
         _registerUser = registerUser,
@@ -34,6 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _updateProfile = updateProfile,
         _changePassword = changePassword,
         _resetPassword = resetPassword,
+        _profileImageService = profileImageService,
         super(AuthInitial()) {
     on<AppStarted>(_onAppStarted);
     on<AuthStatusRequested>(_onAuthStatusRequested);
@@ -44,6 +49,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ProfileUpdateRequested>(_onProfileUpdateRequested);
     on<PasswordChangeRequested>(_onPasswordChangeRequested);
     on<PasswordResetRequested>(_onPasswordResetRequested);
+    on<ProfileImageUploadRequested>(_onProfileImageUploadRequested);
   }
 
   Future<void> _onAppStarted(
@@ -206,6 +212,56 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthError(message: _mapFailureToMessage(failure))),
       (_) => emit(AuthUnauthenticated()),
     );
+  }
+
+  Future<void> _onProfileImageUploadRequested(
+    ProfileImageUploadRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      emit(ProfileImageUploading());
+
+      // Get current user
+      final currentUserResult = await _getCurrentUser(NoParams());
+      final currentUser = currentUserResult.fold(
+        (failure) => throw Exception('Failed to get current user'),
+        (user) => user,
+      );
+
+      // Upload image to Firebase Storage
+      final imageUrl = await _profileImageService.uploadProfileImage(
+        userId: currentUser.id,
+        imageFile: XFile(event.imagePath),
+      );
+
+      if (imageUrl == null) {
+        emit(const ProfileImageUploadFailure(message: 'การอัปโหลดรูปภาพล้มเหลว'));
+        return;
+      }
+
+      // Delete old profile image if exists
+      if (currentUser.profileImageUrl != null && currentUser.profileImageUrl!.isNotEmpty) {
+        await _profileImageService.deleteOldProfileImage(currentUser.profileImageUrl!);
+      }
+
+      // Update profile with new image URL
+      final updateResult = await _updateProfile(
+        UpdateProfileParams(
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          phoneNumber: currentUser.phoneNumber,
+          department: currentUser.department,
+          profileImageUrl: imageUrl,
+        ),
+      );
+
+      updateResult.fold(
+        (failure) => emit(ProfileImageUploadFailure(message: _mapFailureToMessage(failure))),
+        (updatedProfile) => emit(ProfileImageUploadSuccess(profile: updatedProfile)),
+      );
+    } catch (e) {
+      emit(ProfileImageUploadFailure(message: 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ: ${e.toString()}'));
+    }
   }
 
   String _mapFailureToMessage(Failure failure) {

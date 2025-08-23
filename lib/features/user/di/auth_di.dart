@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 
 // User feature imports
+import '../../../core/services/profile_image_service.dart';
 import '../data/datasources/local/auth_local_data_source.dart';
 import '../data/datasources/local/auth_local_data_source_impl.dart';
 import '../data/datasources/remote/auth_remote_data_source.dart';
@@ -69,6 +70,11 @@ Future<void> registerUserDI(GetIt sl) async {
     () => ResetPassword(sl.get<AuthRepository>()),
   );
 
+  // Services
+  sl.registerLazySingleton<ProfileImageService>(
+    () => ProfileImageService(),
+  );
+
   // Bloc (presentation layer)
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(
@@ -79,6 +85,7 @@ Future<void> registerUserDI(GetIt sl) async {
       updateProfile: sl.get<UpdateProfile>(),
       changePassword: sl.get<ChangePassword>(),
       resetPassword: sl.get<ResetPassword>(),
+      profileImageService: sl.get<ProfileImageService>(),
     ),
   );
 }

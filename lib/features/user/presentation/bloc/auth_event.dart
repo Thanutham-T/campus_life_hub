@@ -143,3 +143,13 @@ class EmailVerificationCompleted extends AuthEvent {
   List<Object?> get props => [verificationCode];
 }
 
+// Profile image events
+class ProfileImageUploadRequested extends AuthEvent {
+  final String imagePath;
+
+  const ProfileImageUploadRequested({required this.imagePath});
+
+  @override
+  List<Object?> get props => [imagePath];
+}
+

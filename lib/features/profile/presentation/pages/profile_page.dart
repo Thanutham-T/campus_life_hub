@@ -41,12 +41,26 @@ class _ProfilePageState extends State<ProfilePage> {
         listener: (context, state) {
           if (state is AuthUnauthenticated) {
             context.go(Routes.login);
+          } else if (state is ProfileImageUploadSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('อัปโหลดรูปโปรไฟล์สำเร็จ'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else if (state is ProfileImageUploadFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         },
         builder: (context, state) {
           print('DEBUG: Current AuthState: ${state.runtimeType}');
           
-          if (state is AuthLoading || state is ProfileLoading) {
+          if (state is AuthLoading || state is ProfileLoading || state is ProfileImageUploading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -57,6 +71,8 @@ class _ProfilePageState extends State<ProfilePage> {
           if (state is AuthAuthenticated) {
             profile = state.profile;
           } else if (state is ProfileLoaded) {
+            profile = state.profile;
+          } else if (state is ProfileImageUploadSuccess) {
             profile = state.profile;
           }
 

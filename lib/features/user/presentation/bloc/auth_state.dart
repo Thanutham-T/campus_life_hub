@@ -104,3 +104,24 @@ class ProfileFailure extends AuthState {
   List<Object?> get props => [message];
 }
 
+// Profile image specific states
+class ProfileImageUploading extends AuthState {}
+
+class ProfileImageUploadSuccess extends AuthState {
+  final ProfileEntity profile;
+
+  const ProfileImageUploadSuccess({required this.profile});
+
+  @override
+  List<Object?> get props => [profile];
+}
+
+class ProfileImageUploadFailure extends AuthState {
+  final String message;
+
+  const ProfileImageUploadFailure({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
