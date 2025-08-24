@@ -52,7 +52,7 @@ class AppRouter {
         routes: [
           GoRoute(path: Routes.dashboard, name: 'dashboard', builder: (context, state) => const DashboardPage()),
           GoRoute(path: Routes.profile, name: 'profile', builder: (context, state) => const ProfilePage()),
-          GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => const SchedulePage()),
+          GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => RouteBuilders.buildSchedulePageWithBloc()),
           GoRoute(path: Routes.course, name: 'course', builder: (context, state) => RouteBuilders.buildCoursePageWithBloc()),
           GoRoute(path: Routes.events, name: 'events', builder: (context, state) => const EventPage()),
           GoRoute(
