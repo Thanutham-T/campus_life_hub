@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../widgets/time_line_widget.dart';
 import '../widgets/schedule_card_widget.dart';
 import '../widgets/weekdate_selector_widget.dart';
+import '../widgets/title_manage_tool_widget.dart';
 
 import '../bloc/schedule_bloc.dart';
 import '../bloc/schedule_state.dart';
@@ -30,56 +30,14 @@ class SchedulePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var now = DateTime.now();
-    var day = now.day;
-    var month = DateFormat.MMMM('th').format(now);
-    var year = now.year + 543;
+    var semester = '1/2568';
 
     return Scaffold(
       body: Container(
         margin: EdgeInsets.symmetric(vertical: 25.0, horizontal: 10.0),
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsetsGeometry.symmetric(horizontal: 15.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('วันนี้', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                          SizedBox(width: 6),
-                          Text('ภาคการศึกษาที่ 1/2568', style: TextStyle(fontSize: 14, color: const Color.fromARGB(221, 61, 61, 61))),
-                        ],
-                      ),
-                      Text('$day $month $year', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: (() => {}),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.book, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'จัดการรายวิชา',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            TitleManageToolWidget(semester: semester),
             SizedBox(height: 24),
             WeekDateSelector(),
             SizedBox(height: 20),
