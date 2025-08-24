@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'config/routes/app_router.dart';
 import 'config/di/injector.dart' as di;
@@ -20,6 +21,7 @@ void main() async {
 
   await Firebase.initializeApp();
   await di.initCriticalServices();
+  await initializeDateFormatting('th', null);
 
   FlutterNativeSplash.remove();
   
