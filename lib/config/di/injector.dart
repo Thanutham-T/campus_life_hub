@@ -7,6 +7,7 @@ import '../../core/services/key_value_storage_service.dart';
 import '../../features/user/di/auth_di.dart';
 import '../../features/course/di/course_di.dart';
 import '../../features/study_group/injection_container.dart';
+import '../../features/schedule/di/schedule_register_di.dart';
 
 
 final sl = GetIt.instance;
@@ -23,6 +24,7 @@ Future<void> initNonCriticalServices() async {
   await registerUserDI(sl);
   await registerCourseDI(sl);
   await initStudyGroupFeature();
+  await registerScheduleDI(sl);
 }
 
 /// Initialize external dependencies
