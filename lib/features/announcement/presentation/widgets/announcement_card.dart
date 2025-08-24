@@ -4,14 +4,18 @@ import '../../domain/entities/announcement.dart';
 /// Widget for displaying announcement card
 class AnnouncementCard extends StatelessWidget {
   final Announcement announcement;
+  final bool isBookmarked;
   final VoidCallback? onTap;
   final VoidCallback? onMarkAsRead;
+  final VoidCallback? onBookmarkTap;
 
   const AnnouncementCard({
     super.key,
     required this.announcement,
+    this.isBookmarked = false,
     this.onTap,
     this.onMarkAsRead,
+    this.onBookmarkTap,
   });
 
   @override

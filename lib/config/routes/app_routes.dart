@@ -11,6 +11,8 @@ abstract final class Routes {
   static const studyGroupChat = '/studyGroups/:groupId/chat';
   static const campusMap = '/campusMap';
   static const announcements = '/announcements';
+  static const createAnnouncement = '/announcements/create';
+  static const adminManagement = '/admin-management';
   static const course = '/course';
   static const onboarding = '/onboarding';
   static const settings = '/settings';

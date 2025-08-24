@@ -6,7 +6,7 @@ class MarkAnnouncementAsRead {
 
   MarkAnnouncementAsRead(this.repository);
 
-  Future<void> call(String id) async {
-    return await repository.markAsRead(id);
+  Future<void> call(String announcementId, String userId) async {
+    return await repository.markAsRead(announcementId, userId);
   }
 }

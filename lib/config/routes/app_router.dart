@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../layouts/main_layout.dart';
 import '../routes/app_routes.dart';
@@ -17,6 +19,9 @@ import '../../features/campus_event/presentation/pages/event_page.dart';
 import '../../features/campus_event/presentation/pages/event_detail_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
 import '../../features/announcement/presentation/pages/announcement_page.dart';
+import '../../features/announcement/presentation/pages/create_announcement_page.dart';
+import '../../features/announcement/presentation/bloc/announcement_bloc.dart';
+import '../../features/announcement/domain/repositories/announcement_repository.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/study_group/presentation/pages/study_group_chat_page.dart';
@@ -111,7 +116,22 @@ class AppRouter {
             },
           ),
           GoRoute(path: Routes.campusMap, name: 'map', builder: (context, state) => const CampusMapPage()),
-          GoRoute(path: Routes.announcements, name: 'announcements', builder: (context, state) => const AnnouncementPage()),
+          GoRoute(
+            path: Routes.announcements, 
+            name: 'announcements', 
+            builder: (context, state) => BlocProvider(
+              create: (context) => AnnouncementBloc(
+                repository: GetIt.instance<AnnouncementRepository>(),
+                auth: GetIt.instance<FirebaseAuth>(),
+              ),
+              child: const AnnouncementPage(),
+            ),
+          ),
+          GoRoute(
+            path: Routes.createAnnouncement,
+            name: 'create-announcement',
+            builder: (context, state) => const CreateAnnouncementPage(),
+          ),
           GoRoute(path: Routes.settings, name: 'settings', builder: (context, state) => const SettingsPage()),
         ]
       ),

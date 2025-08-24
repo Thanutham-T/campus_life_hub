@@ -7,6 +7,12 @@ import '../../core/services/key_value_storage_service.dart';
 import '../../features/user/di/auth_di.dart';
 import '../../features/course/di/course_di.dart';
 import '../../features/study_group/injection_container.dart';
+import '../../features/announcement/data/datasources/announcement_firebase_data_source.dart';
+import '../../features/announcement/data/datasources/announcement_remote_data_source.dart';
+import '../../features/announcement/data/datasources/user_announcement_data_source.dart';
+import '../../features/announcement/data/datasources/user_announcement_firebase_data_source.dart';
+import '../../features/announcement/data/repositories/announcement_repository_impl.dart';
+import '../../features/announcement/domain/repositories/announcement_repository.dart';
 
 
 final sl = GetIt.instance;
@@ -23,6 +29,24 @@ Future<void> initNonCriticalServices() async {
   await registerUserDI(sl);
   await registerCourseDI(sl);
   await initStudyGroupFeature();
+  
+  // Register announcement dependencies
+  sl.registerLazySingleton<AnnouncementRemoteDataSource>(
+    () => AnnouncementFirebaseDataSource(),
+  );
+  
+  sl.registerLazySingleton<UserAnnouncementDataSource>(
+    () => UserAnnouncementFirebaseDataSource(
+      auth: sl<FirebaseAuth>(),
+    ),
+  );
+
+  sl.registerLazySingleton<AnnouncementRepository>(
+    () => AnnouncementRepositoryImpl(
+      remoteDataSource: sl<AnnouncementRemoteDataSource>(),
+      userDataSource: sl<UserAnnouncementDataSource>(),
+    ),
+  );
 }
 
 /// Initialize external dependencies
