@@ -88,7 +88,7 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     on<WithdrawFromCourse>((event, emit) async {
       emit(CourseLoading());
       try {
-        await withdrawnCourse(event.sectionId, event.userId);
+        await withdrawnCourse(event.userId, event.sectionId);
         emit(CourseSuccess());
         final courses = await getCourseWithEnrollStatus(event.userId);
         final queryCourses = courses;
