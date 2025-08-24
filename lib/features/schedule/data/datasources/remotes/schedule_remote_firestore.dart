@@ -15,6 +15,12 @@ abstract class ScheduleRemoteDataSource {
   Future<void> addTemplate(ScheduleTemplateModel template);
   Future<void> addSlot(String templateId, ScheduleSlotModel slot);
   Future<void> addLog(String templateId, String slotId, ScheduleLogModel log);
+
+  /// Add template plus its slots in one operation (use when enrolling)
+  Future<void> addTemplateWithSlots(ScheduleTemplateModel template, List<ScheduleSlotModel> slots);
+
+  /// Delete templates (and their slots/logs) for a user by section id
+  Future<void> deleteTemplateBySection(String userId, String sectionId);
 }
 
 class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
@@ -103,5 +109,69 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
       'checkInAt': log.checkInAt,
       'note': log.note,
     });
+  }
+
+  /// Add template and its slots atomically
+  @override
+  Future<void> addTemplateWithSlots(ScheduleTemplateModel template, List<ScheduleSlotModel> slots) async {
+    final batch = _firestore.batch();
+    final templateRef = _firestore.collection('schedules').doc(template.id);
+
+    batch.set(templateRef, {
+      'userId': template.userId,
+      'courseId': template.courseId,
+      'courseNameEng': template.courseNameEng,
+      'courseNameTh': template.courseNameTh,
+      'sectionId': template.sectionId,
+      'sectionCode': template.sectionCode,
+      'instructor': template.instructor,
+      'createdAt': template.createdAt,
+    });
+
+    for (final slot in slots) {
+      final slotRef = templateRef.collection('slots').doc(slot.id);
+      batch.set(slotRef, {
+        'dayOfWeek': slot.dayOfWeek,
+        'startTime': slot.startTime,
+        'endTime': slot.endTime,
+        'room': slot.room,
+        'origin': slot.origin,
+        'isActive': slot.isActive,
+        'isCustom': slot.isCustom,
+      });
+    }
+
+    await batch.commit();
+  }
+
+  /// New: delete template(s) by userId + sectionId, including slots and logs
+  @override
+  Future<void> deleteTemplateBySection(String userId, String sectionId) async {
+    final query = await _firestore
+        .collection('schedules')
+        .where('userId', isEqualTo: userId)
+        .where('sectionId', isEqualTo: sectionId)
+        .get();
+
+    for (final tplDoc in query.docs) {
+      final tplRef = tplDoc.reference;
+
+      // delete slots and their logs
+      final slotsSnap = await tplRef.collection('slots').get();
+      for (final slotDoc in slotsSnap.docs) {
+        final slotRef = slotDoc.reference;
+
+        final logsSnap = await slotRef.collection('logs').get();
+        // delete logs
+        final logDeletes = logsSnap.docs.map((d) => d.reference.delete());
+        await Future.wait(logDeletes);
+
+        // delete slot
+        await slotRef.delete();
+      }
+
+      // delete template document
+      await tplRef.delete();
+    }
   }
 }

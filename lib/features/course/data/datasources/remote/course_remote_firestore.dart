@@ -1,4 +1,6 @@
+import 'package:campus_life_hub/core/logging/logging.dart';
 import 'package:campus_life_hub/features/schedule/data/models/schedule_template_model.dart';
+import 'package:campus_life_hub/features/schedule/data/models/schedule_slots_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:campus_life_hub/features/schedule/data/datasources/remotes/schedule_remote_firestore.dart';
@@ -90,6 +92,7 @@ class CourseRemoteFirestore implements CourseDataSource {
 
   @override
   Future<void> enrollToSection(String courseId, String sectionId, String userId) async {
+    // record enrollment
     await _firestore.collection('course_enrollments').add({
       'userId': userId,
       'courseId': courseId,
@@ -97,20 +100,45 @@ class CourseRemoteFirestore implements CourseDataSource {
       'enroll_time': FieldValue.serverTimestamp(),
     });
 
-    final courseData = await fetchCourseDetail(courseId);
+    // build schedule template + slots from course data and enroll section
+    final course = await fetchCourseDetail(courseId);
 
-    await ScheduleRemoteFirestoreImpl().addTemplate(ScheduleTemplateModel(
-      id: '',
+    final section = course.sections.firstWhere(
+      (s) => s.id == sectionId,
+      orElse: () => throw Exception('Section not found'),
+    );
+
+    // generate ids for template and slots
+    final templateId = _firestore.collection('schedules').doc().id;
+
+    final template = ScheduleTemplateModel(
+      id: templateId,
       userId: userId,
       courseId: courseId,
-      courseCode: courseData.code,
-      courseNameEng: courseData.nameEn,
-      courseNameTh: courseData.nameTh,
+      courseCode: course.code,
+      courseNameEng: course.nameEn,
+      courseNameTh: course.nameTh,
       sectionId: sectionId,
-      sectionCode: courseData.sections.firstWhere((s) => s.id == sectionId).sectionCode,
-      instructor: courseData.sections.firstWhere((s) => s.id == sectionId).instructor,
-      createdAt: Timestamp.fromDate(DateTime.now()),
-    ));
+      sectionCode: section.sectionCode,
+      instructor: section.instructor,
+      createdAt: Timestamp.now(),
+    );
+
+    final slots = (section.schedules).map<ScheduleSlotModel>((sch) {
+      final slotId = _firestore.collection('schedules').doc(templateId).collection('slots').doc().id;
+      return ScheduleSlotModel(
+        id: slotId,
+        dayOfWeek: sch.dayOfWeek,
+        startTime: sch.startTime,
+        endTime: sch.endTime,
+        room: sch.room,
+        origin: 'course',
+        isActive: true,
+        isCustom: false,
+      );
+    }).toList();
+
+    await ScheduleRemoteFirestoreImpl().addTemplateWithSlots(template, slots);
   }
 
   @override
@@ -145,14 +173,16 @@ class CourseRemoteFirestore implements CourseDataSource {
 
   @override
   Future<void> withdrawFromSection(String userId, String sectionId) async {
-    final snapshot = await _firestore
-        .collection('course_enrollments')
-        .where('sectionId', isEqualTo: sectionId)
-        .where('userId', isEqualTo: userId)
-        .get();
+    final querySnapshot = await _firestore
+      .collection('course_enrollments')
+      .where('sectionId', isEqualTo: sectionId)
+      .where('userId', isEqualTo: userId)
+      .get();
 
-    for (var doc in snapshot.docs) {
+    for (final doc in querySnapshot.docs) {
       await doc.reference.delete();
     }
+
+    await ScheduleRemoteFirestoreImpl().deleteTemplateBySection(userId, sectionId);
   }
 }
