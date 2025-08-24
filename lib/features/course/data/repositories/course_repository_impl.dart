@@ -1,3 +1,5 @@
+import 'package:campus_life_hub/core/core_modules.dart';
+
 import 'package:campus_life_hub/features/course/domain/entities/course_entity.dart';
 import 'package:campus_life_hub/features/course/domain/repositories/course_repository.dart';
 
@@ -38,7 +40,8 @@ class CourseRepositoryImpl implements CourseRepository {
 
   @override
   Future<List<CourseEntity>> getCoursesWithEnrollStatus(String userId) async {
-    final courses = await dataSource.fetchCoursesFromSemester('1/2567'); // Example semester, adjust as needed
+    final semester = getCurrentSemester();
+    final courses = await dataSource.fetchCoursesFromSemester(semester);
     final enrolledCourses = await dataSource.fetchEnrolledCourses(userId);
 
     return courses.map((course) {
