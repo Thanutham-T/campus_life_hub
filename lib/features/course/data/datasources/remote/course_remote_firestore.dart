@@ -1,4 +1,8 @@
+import 'package:campus_life_hub/features/schedule/data/models/schedule_template_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:campus_life_hub/features/schedule/data/datasources/remotes/schedule_remote_firestore.dart';
+
 import '../../models/course_model.dart';
 
 abstract class CourseDataSource {
@@ -92,6 +96,21 @@ class CourseRemoteFirestore implements CourseDataSource {
       'sectionId': sectionId,
       'enroll_time': FieldValue.serverTimestamp(),
     });
+
+    final courseData = await fetchCourseDetail(courseId);
+
+    await ScheduleRemoteFirestoreImpl().addTemplate(ScheduleTemplateModel(
+      id: '',
+      userId: userId,
+      courseId: courseId,
+      courseCode: courseData.code,
+      courseNameEng: courseData.nameEn,
+      courseNameTh: courseData.nameTh,
+      sectionId: sectionId,
+      sectionCode: courseData.sections.firstWhere((s) => s.id == sectionId).sectionCode,
+      instructor: courseData.sections.firstWhere((s) => s.id == sectionId).instructor,
+      createdAt: Timestamp.fromDate(DateTime.now()),
+    ));
   }
 
   @override

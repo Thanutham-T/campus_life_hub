@@ -4,7 +4,7 @@ import 'section_schedule.dart';
 class CourseSection {
   final String id;
   final String sectionCode;
-  final List<dynamic> instructor;
+  final List<String> instructor;
   final bool isEnrolled;
   final List<SectionSchedule> schedules;
 
@@ -19,7 +19,7 @@ class CourseSection {
   CourseSection copyWith({
     String? id,
     String? sectionCode,
-    List<dynamic>? instructor,
+    List<String>? instructor,
     List<SectionSchedule>? schedules,
     bool? isEnrolled,
   }) {

@@ -70,7 +70,7 @@ class CourseSectionModel extends CourseSection {
     return CourseSectionModel(
       id: map['id'],
       sectionCode: map['sectionCode'],
-      instructor: map['instructor'],
+      instructor: List<String>.from(map['instructor'] ?? []),
       schedules: (map['schedules'] as List? ?? [])
           .map((e) => SectionScheduleModel.fromAny(e))
           .toList(),
