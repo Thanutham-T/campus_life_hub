@@ -15,7 +15,7 @@ class WeekDateSelector extends StatelessWidget {
     return StatefulBuilder(
       builder: (context, setState) {
         final now = DateTime.now();
-        final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        final firstDayOfWeek = now.subtract(Duration(days: now.weekday % 7));
         final selectedDateNotifier = ValueNotifier<DateTime>(now);
 
         return ValueListenableBuilder<DateTime>(
