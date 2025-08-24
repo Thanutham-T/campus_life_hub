@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:campus_life_hub/core/core_modules.dart';
+
 import '../widgets/time_line_widget.dart';
 import '../widgets/schedule_card_widget.dart';
 import '../widgets/weekdate_selector_widget.dart';
@@ -30,7 +32,7 @@ class SchedulePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var semester = '1/2568';
+    var semester = getCurrentSemester();
 
     return Scaffold(
       body: Container(
