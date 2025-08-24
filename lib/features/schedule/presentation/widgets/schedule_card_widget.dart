@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../pages/schedule_page.dart';
+
+import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
 
 class ScheduleCardWidget extends StatelessWidget {
   final bool halfWidth;
-  final ScheduleItem data;
+  final ScheduleTimelineEntity data;
 
   const ScheduleCardWidget({super.key, required this.data, this.halfWidth = false});
 
@@ -21,7 +22,7 @@ class ScheduleCardWidget extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  data.code,
+                  data.courseCode,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -31,7 +32,7 @@ class ScheduleCardWidget extends StatelessWidget {
                 const SizedBox(width: 3),
                 Expanded(
                   child: Text(
-                    data.name,
+                    data.courseNameTh,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
@@ -43,7 +44,7 @@ class ScheduleCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Section: ${data.section}',
+              'Section: ${data.sectionCode}',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
               overflow: TextOverflow.ellipsis,
             ),
@@ -67,7 +68,7 @@ class ScheduleCardWidget extends StatelessWidget {
                     // Add your check-in logic here
                   },
                   child: Text(
-                    data.checkedIn ? "Checked In" : "Check In",
+                    data.isCheckin ? "Checked In" : "Check In",
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
                   ),
                 ),
