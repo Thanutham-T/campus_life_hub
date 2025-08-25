@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../bloc/schedule_bloc.dart';
+import '../bloc/schedule_event.dart';
+
 
 class ScheduleCardWidget extends StatelessWidget {
   final bool halfWidth;
@@ -56,7 +62,7 @@ class ScheduleCardWidget extends StatelessWidget {
             const Spacer(),
             Align(
               alignment: Alignment.bottomRight,
-              child: SizedBox(
+                child: SizedBox(
                 height: 35,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -64,12 +70,15 @@ class ScheduleCardWidget extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     textStyle: const TextStyle(fontSize: 12),
                   ),
-                  onPressed: () {
-                    // Add your check-in logic here
-                  },
+                  onPressed: data.isCheckin
+                    ? null
+                    : () {
+                      final firebaseAuth = FirebaseAuth.instance;
+                      context.read<ScheduleBloc>().add(CheckInClass(userId: firebaseAuth.currentUser!.uid, templateId: data.templateId, slotId: data.slotId, logId: data.logId));
+                    },
                   child: Text(
-                    data.isCheckin ? "Checked In" : "Check In",
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                  data.isCheckin ? "Checked In" : "Check In",
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
                   ),
                 ),
               ),
