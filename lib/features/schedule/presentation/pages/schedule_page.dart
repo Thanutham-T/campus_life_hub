@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:campus_life_hub/core/core_modules.dart';
+import 'package:http/http.dart';
 
 import '../widgets/time_line_widget.dart';
 import '../widgets/schedule_card_widget.dart';
@@ -85,12 +86,21 @@ class SchedulePage extends StatelessWidget {
 
                         // Check is current item time overlap with next item (calculate top position)
                         if (i < data.length - 1) {
-                          top += 43;
+                          final prevStart = _convertTimeOfDayToMinutes(data[i].startTime);
                           final prevEnd = _convertTimeOfDayToMinutes(data[i].endTime);
                           final nextStart = _convertTimeOfDayToMinutes(data[i + 1].startTime);
-                          top += prevEnd < nextStart
-                            ? 120
-                            : 10 * ((nextStart - _convertTimeOfDayToMinutes(data[i].startTime)) ~/ 10);
+
+                          if (prevStart != nextStart) {
+                            top += 43;
+                          }
+                          if (prevEnd <= nextStart) {
+                            top += 120;
+                          } else {
+                            var pos =  ((nextStart - _convertTimeOfDayToMinutes(data[i].startTime)) ~/ 10) > 12 
+                                        ? 6
+                                        : ((nextStart - _convertTimeOfDayToMinutes(data[i].startTime)) ~/ 10);
+                            top += 10 * pos;
+                          }
                         }
                       }
 
@@ -105,15 +115,23 @@ class SchedulePage extends StatelessWidget {
                             final item = data[index];
                             final isLast = index == data.length - 1;
                             final nextItem = !isLast ? data[index + 1] : null;
-                            final widgets = <Widget>[TimeLineWidget(startTime: item.startTime, endTime: item.endTime, isEnd: isLast),];
+
+                            final itemStartMinutes = _convertTimeOfDayToMinutes(item.startTime);
+                            final nextStartMinutes = nextItem != null ? _convertTimeOfDayToMinutes(nextItem.startTime) : 0;
+
+                            var widgets = <Widget>[
+                              if (itemStartMinutes != nextStartMinutes || index != 0)
+                                TimeLineWidget(startTime: item.startTime, endTime: item.endTime, isEnd: isLast),
+                            ];
                             if (!isLast && nextItem != null) {
-                              final itemEndMinutes = _convertTimeOfDayToMinutes(item.endTime);
-                              final nextStartMinutes = _convertTimeOfDayToMinutes(nextItem.startTime);
-                              widgets.add(TimeLineWidget(
-                                numberOfLine: itemEndMinutes < nextStartMinutes
-                                  ? 12
-                                  : ((nextStartMinutes - _convertTimeOfDayToMinutes(item.startTime)) ~/ 10),
-                              ));
+                                final itemEndMinutes = _convertTimeOfDayToMinutes(item.endTime);
+                                widgets.add(TimeLineWidget(
+                                  numberOfLine: itemEndMinutes <= nextStartMinutes
+                                    ? 12
+                                    : ((nextStartMinutes - itemStartMinutes) ~/ 10) > 12
+                                        ? 6
+                                        : ((nextStartMinutes - itemStartMinutes) ~/ 10),
+                                ));
                             }
                             return Column(children: widgets);
                           }),

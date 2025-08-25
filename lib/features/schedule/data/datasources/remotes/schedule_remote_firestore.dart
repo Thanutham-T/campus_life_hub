@@ -111,7 +111,7 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
     });
   }
 
-  /// Add template and its slots atomically
+  /// Add template and its slots atomically and logs
   @override
   Future<void> addTemplateWithSlots(ScheduleTemplateModel template, List<ScheduleSlotModel> slots) async {
     final batch = _firestore.batch();
@@ -139,6 +139,37 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
         'isActive': slot.isActive,
         'isCustom': slot.isCustom,
       });
+
+
+      final now = DateTime.now();
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+
+      final dayOfWeekMap = {
+          'monday': 1,
+          'tuesday': 2,
+          'wednesday': 3,
+          'thursday': 4,
+          'friday': 5,
+          'saturday': 6,
+          'sunday': 7,
+        };
+        
+      // Add logs for each day in the week matching the slot's dayOfWeek
+      for (int i = 0; i < 7; i++) {
+        final date = startOfWeek.add(Duration(days: i));
+        
+        final slotWeekday = dayOfWeekMap[slot.dayOfWeek.toLowerCase()];
+        if (date.weekday == slotWeekday) {
+          final logId = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+          final logRef = slotRef.collection('logs').doc(logId);
+          batch.set(logRef, {
+            'date': date,
+            'status': 'pending',
+            'checkInAt': null,
+            'note': '',
+          });
+        }
+      }
     }
 
     await batch.commit();

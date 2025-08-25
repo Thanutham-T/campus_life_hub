@@ -15,26 +15,6 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
 
   ScheduleRepositoryImpl(this.datasource);
 
-  String _dayOfWeekString(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return "monday";
-      case DateTime.tuesday:
-        return "tuesday";
-      case DateTime.wednesday:
-        return "wednesday";
-      case DateTime.thursday:
-        return "thursday";
-      case DateTime.friday:
-        return "friday";
-      case DateTime.saturday:
-        return "saturday";
-      case DateTime.sunday:
-        return "sunday";
-      default:
-        return "";
-    }
-  }
 
   TimeOfDay _parseTimeOfDay(String time) {
     final parts = time.split(':');
@@ -55,12 +35,15 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       final slots = await datasource.getSlots(template.id);
 
       for (final slot in slots) {
-        // 3. filter เฉพาะ dayOfWeek ที่ตรงกับ date
-        final dayName = _dayOfWeekString(date.weekday); // ex. "monday"
-        if (slot.dayOfWeek.toLowerCase() != dayName.toLowerCase()) continue;
-
-        // 4. โหลด logs เฉพาะของ slot
+        // 3. filter เฉพาะ slot ที่มี log ในวันนั้น
         final logs = await datasource.getLogs(template.id, slot.id);
+        final hasLogForToday = logs.any(
+          (log) =>
+              log.date.toDate().year == date.year &&
+              log.date.toDate().month == date.month &&
+              log.date.toDate().day == date.day,
+        );
+        if (!hasLogForToday) continue;
 
         // หา log ของวันนั้น
         final logForToday = logs.firstWhere(
