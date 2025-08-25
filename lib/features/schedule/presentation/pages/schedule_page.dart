@@ -150,7 +150,7 @@ class SchedulePage extends StatelessWidget {
                         ),
                         SizedBox(
                           width: 300,
-                          height: (data.length * 150) + 20,
+                          height: cardPositions.last.top + 170,
                           child: Stack(
                           children: List.generate(data.length, (index) {
                             return BlocSelector<ScheduleBloc, ScheduleState, ScheduleTimelineEntity>(
