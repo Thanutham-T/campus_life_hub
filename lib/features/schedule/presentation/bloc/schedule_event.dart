@@ -27,3 +27,21 @@ class LoadDaySchedule extends ScheduleEvent {
   @override
   List<Object?> get props => [userId, date];
 }
+
+class CheckInClass extends ScheduleEvent {
+  final String userId;
+
+  final String templateId;
+  final String slotId;
+  final String logId;
+
+  const CheckInClass({
+    required this.userId,
+    required this.templateId,
+    required this.slotId,
+    required this.logId,
+  });
+
+  @override
+  List<Object?> get props => [templateId, slotId, logId];
+}

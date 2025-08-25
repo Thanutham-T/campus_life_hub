@@ -15,11 +15,12 @@ class ScheduleLoading extends ScheduleState {}
 
 class ScheduleLoaded extends ScheduleState {
   final List<ScheduleTimelineEntity> schedules;
+  final DateTime selectedDate;
 
-  const ScheduleLoaded(this.schedules);
+  const ScheduleLoaded(this.schedules, this.selectedDate);
 
   @override
-  List<Object?> get props => [schedules];
+  List<Object?> get props => [schedules, selectedDate];
 }
 
 class ScheduleError extends ScheduleState {
