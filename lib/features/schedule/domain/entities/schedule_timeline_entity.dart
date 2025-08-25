@@ -10,9 +10,10 @@ class ScheduleTimelineEntity {
   final String courseNameTh;
   final String sectionCode;
   final String room;
-  final TimeOfDay startTime; // "HH:mm" format for UI
-  final TimeOfDay endTime;   // "HH:mm" format for UI
-  final bool isCheckin;    // "active", "cancelled", etc.
+  final TimeOfDay startTime;
+  final TimeOfDay endTime;
+  final String note;
+  final bool isCheckin;
 
   ScheduleTimelineEntity({
     required this.templateId,
@@ -26,6 +27,7 @@ class ScheduleTimelineEntity {
     required this.room,
     required this.startTime,
     required this.endTime,
+    required this.note,
     required this.isCheckin,
   });
 }

@@ -73,6 +73,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
             room: slot.room,
             startTime: _parseTimeOfDay(slot.startTime),
             endTime: _parseTimeOfDay(slot.endTime),
+            note: logForToday.note ?? '',
             isCheckin: logForToday.status == "checked_in",
           ),
         );
@@ -96,6 +97,11 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
 
   @override
   Future<void> checkInClass(String templateId, String slotId, String logId) async {
-    await datasource.updateCheckinLogId(templateId, slotId, logId);
+    await datasource.updateCheckinForLog(templateId, slotId, logId);
+  }
+
+  @override
+  Future<void> updateClassInfo(String templateId, String slotId, String logId, String newRoom, String newNote) async {
+    await datasource.updateClassForLog(templateId, slotId, logId, newRoom, newNote);
   }
 }

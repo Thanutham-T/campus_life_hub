@@ -22,7 +22,8 @@ abstract class ScheduleRemoteDataSource {
   /// Delete templates (and their slots/logs) for a user by section id
   Future<void> deleteTemplateBySection(String userId, String sectionId);
 
-  Future<void> updateCheckinLogId(String templateId, String slotId, String logId);
+  Future<void> updateCheckinForLog(String templateId, String slotId, String logId);
+  Future<void> updateClassForLog(String templateId, String slotId, String logId, String newRoom, String newNote);
 }
 
 class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
@@ -43,6 +44,7 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
     await _firestore.collection('schedules').doc(template.id).set({
       'userId': template.userId,
       'courseId': template.courseId,
+      'courseCode': template.courseCode,
       'courseNameEng': template.courseNameEng,
       'courseNameTh': template.courseNameTh,
       'sectionId': template.sectionId,
@@ -122,6 +124,7 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
     batch.set(templateRef, {
       'userId': template.userId,
       'courseId': template.courseId,
+      'courseCode': template.courseCode,
       'courseNameEng': template.courseNameEng,
       'courseNameTh': template.courseNameTh,
       'sectionId': template.sectionId,
@@ -209,7 +212,7 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
   }
 
   @override
-  Future<void> updateCheckinLogId(String templateId, String slotId, String logId) async {
+  Future<void> updateCheckinForLog(String templateId, String slotId, String logId) async {
     await _firestore
         .collection('schedules')
         .doc(templateId)
@@ -220,6 +223,21 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
         .update({
           'checkInAt': FieldValue.serverTimestamp(),
           'status': 'checked_in',
+        });
+  }
+
+  @override
+  Future<void> updateClassForLog(String templateId, String slotId, String logId, String newRoom, String newNote) async {
+    await _firestore
+        .collection('schedules')
+        .doc(templateId)
+        .collection('slots')
+        .doc(slotId)
+        .collection('logs')
+        .doc(logId)
+        .update({
+          'room': newRoom,
+          'note': newNote,
         });
   }
 }
