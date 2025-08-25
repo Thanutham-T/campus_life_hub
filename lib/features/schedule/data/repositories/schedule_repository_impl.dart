@@ -63,6 +63,9 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
         // 5. Map ออกมาเป็น ScheduleTimelineEntity
         results.add(
           ScheduleTimelineEntity(
+            templateId: template.id,
+            slotId: slot.id,
+            logId: logForToday.id,
             courseCode: template.courseCode,
             courseNameEng: template.courseNameEng,
             courseNameTh: template.courseNameTh,
@@ -89,5 +92,10 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
     });
 
     return results;
+  }
+
+  @override
+  Future<void> checkInClass(String templateId, String slotId, String logId) async {
+    await datasource.updateCheckinLogId(templateId, slotId, logId);
   }
 }

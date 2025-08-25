@@ -1,5 +1,8 @@
 class ScheduleLogEntity {
-  final String id;
+  final String templateId;
+  final String slotId;
+  final String logId;
+
   final String courseId;
   final String courseNameEng;
   final String courseNameTh;
@@ -9,7 +12,10 @@ class ScheduleLogEntity {
   final String? note;
 
   ScheduleLogEntity({
-    required this.id,
+    required this.templateId,
+    required this.slotId,
+    required this.logId,
+    
     required this.courseId,
     required this.courseNameEng,
     required this.courseNameTh,

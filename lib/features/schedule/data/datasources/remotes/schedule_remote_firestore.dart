@@ -21,6 +21,8 @@ abstract class ScheduleRemoteDataSource {
 
   /// Delete templates (and their slots/logs) for a user by section id
   Future<void> deleteTemplateBySection(String userId, String sectionId);
+
+  Future<void> updateCheckinLogId(String templateId, String slotId, String logId);
 }
 
 class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
@@ -204,5 +206,20 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
       // delete template document
       await tplRef.delete();
     }
+  }
+
+  @override
+  Future<void> updateCheckinLogId(String templateId, String slotId, String logId) async {
+    await _firestore
+        .collection('schedules')
+        .doc(templateId)
+        .collection('slots')
+        .doc(slotId)
+        .collection('logs')
+        .doc(logId)
+        .update({
+          'checkInAt': FieldValue.serverTimestamp(),
+          'status': 'checked_in',
+        });
   }
 }

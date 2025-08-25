@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ScheduleTimelineEntity {
+  final String templateId;
+  final String slotId;
+  final String logId;
+
   final String courseCode;
   final String courseNameEng;
   final String courseNameTh;
@@ -11,6 +15,10 @@ class ScheduleTimelineEntity {
   final bool isCheckin;    // "active", "cancelled", etc.
 
   ScheduleTimelineEntity({
+    required this.templateId,
+    required this.slotId,
+    required this.logId,
+
     required this.courseCode,
     required this.courseNameEng,
     required this.courseNameTh,
