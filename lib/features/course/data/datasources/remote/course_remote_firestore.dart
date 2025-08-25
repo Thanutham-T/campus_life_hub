@@ -1,4 +1,3 @@
-import 'package:campus_life_hub/core/logging/logging.dart';
 import 'package:campus_life_hub/features/schedule/data/models/schedule_template_model.dart';
 import 'package:campus_life_hub/features/schedule/data/models/schedule_slots_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
