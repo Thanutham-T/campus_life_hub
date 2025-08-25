@@ -149,91 +149,97 @@ class ScheduleCardWidget extends StatelessWidget {
       },
       child: Card(
         elevation: 4,
+        shape: RoundedRectangleBorder(
+          side: (data.note.trim().isNotEmpty)
+          ? const BorderSide(color: Colors.red, width: 1.5)
+          : BorderSide.none,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Container(
           width: halfWidth ? 140 : 290,
           height: 150,
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Text(
-                    data.courseCode,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(width: 3),
-                  Expanded(
-                    child: Text(
-                      data.courseNameTh,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+          Text(
+            data.courseCode,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(width: 3),
+          Expanded(
+            child: Text(
+              data.courseNameTh,
+              style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Section: ${data.sectionCode}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                'Room: ${data.room}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              const Spacer(),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: SizedBox(
-                  height: 35,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(120, 28),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      textStyle: const TextStyle(fontSize: 12),
-                    ),
-                    onPressed: data.isCheckin
-                        ? null
-                        : () {
-                            final firebaseAuth = FirebaseAuth.instance;
-                            context.read<ScheduleBloc>().add(
-                              CheckInClass(
-                                userId: firebaseAuth.currentUser!.uid,
-                                templateId: data.templateId,
-                                slotId: data.slotId,
-                                logId: data.logId,
-                              ),
-                            );
-                          },
-                    child: Text(
-                      data.isCheckin ? "Checked In" : "Check In",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Section: ${data.sectionCode}',
+            style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            'Room: ${data.room}',
+            style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const Spacer(),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: SizedBox(
+          height: 35,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(120, 28),
+              padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 4,
+              ),
+              textStyle: const TextStyle(fontSize: 12),
+            ),
+            onPressed: data.isCheckin
+            ? null
+            : () {
+                final firebaseAuth = FirebaseAuth.instance;
+                context.read<ScheduleBloc>().add(
+              CheckInClass(
+                userId: firebaseAuth.currentUser!.uid,
+                templateId: data.templateId,
+                slotId: data.slotId,
+                logId: data.logId,
+              ),
+                );
+              },
+            child: Text(
+              data.isCheckin ? "Checked In" : "Check In",
+              style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+              ),
+            ),
+          ),
+            ),
+          ),
+        ],
           ),
         ),
       ),
