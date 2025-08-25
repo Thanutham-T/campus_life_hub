@@ -45,3 +45,24 @@ class CheckInClass extends ScheduleEvent {
   @override
   List<Object?> get props => [templateId, slotId, logId];
 }
+
+class UpdateClass extends ScheduleEvent {
+  final String userId;
+  final String templateId;
+  final String slotId;
+  final String logId;
+  final String newRoom;
+  final String newNote;
+
+  const UpdateClass({
+    required this.userId,
+    required this.templateId,
+    required this.slotId,
+    required this.logId,
+    required this.newRoom,
+    required this.newNote,
+  });
+
+  @override
+  List<Object?> get props => [userId, templateId, slotId, logId, newRoom, newNote];
+}

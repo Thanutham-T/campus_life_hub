@@ -6,21 +6,25 @@ import '../bloc/schedule_state.dart';
 import '../../domain/usecases/get_today_schedule_usecase.dart';
 import '../../domain/usecases/get_day_schedule_usecase.dart';
 import '../../domain/usecases/check_in_class_usecase.dart';
+import '../../domain/usecases/update_class_usecase.dart';
 
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final GetTodayScheduleUseCase getTodaySchedule;
   final GetDayScheduleUseCase getDaySchedule;
   final CheckInClassUseCase checkInClass;
+  final UpdateClassUseCase updateClass;
 
   ScheduleBloc({
     required this.getTodaySchedule,
     required this.getDaySchedule,
     required this.checkInClass,
+    required this.updateClass,
   }) : super(ScheduleInitial()) {
     on<LoadTodaySchedule>(_onLoadTodaySchedule);
     on<LoadDaySchedule>(_onLoadDaySchedule);
     on<CheckInClass>(_onCheckInClass);
+    on<UpdateClass>(_onUpdateClass);
   }
 
   Future<void> _onLoadTodaySchedule(LoadTodaySchedule event, Emitter<ScheduleState> emit) async {
@@ -52,6 +56,29 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     emit(ScheduleLoading());
     try {
       await checkInClass(event.templateId, event.slotId, event.logId);
+      final dateToUse = selectedDate ?? DateTime.now();
+      final schedules = await getDaySchedule(event.userId, dateToUse);
+      emit(ScheduleLoaded(schedules, dateToUse));
+    } catch (e) {
+      emit(ScheduleError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateClass(UpdateClass event, Emitter<ScheduleState> emit) async {
+    DateTime? selectedDate;
+    final currentState = state;
+    if (currentState is ScheduleLoaded) {
+      selectedDate = currentState.selectedDate;
+    }
+    emit(ScheduleLoading());
+    try {
+      await updateClass(
+        event.templateId,
+        event.slotId,
+        event.logId,
+        event.newRoom,
+        event.newNote,
+      );
       final dateToUse = selectedDate ?? DateTime.now();
       final schedules = await getDaySchedule(event.userId, dateToUse);
       emit(ScheduleLoaded(schedules, dateToUse));
