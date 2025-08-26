@@ -33,7 +33,7 @@ class RouteBuilders {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData && snapshot.data != null) {
             return BlocProvider.value(
-              value: snapshot.data!..add(LoadTodaySchedule(userId: FirebaseAuth.instance.currentUser!.uid,)),
+              value: snapshot.data!..add(LoadTodaySchedule(userId: FirebaseAuth.instance.currentUser!.uid)),
               child: const SchedulePage(),
             );
           } else {
