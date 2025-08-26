@@ -14,7 +14,7 @@ abstract class ScheduleRemoteDataSource {
 
   Future<void> addTemplate(ScheduleTemplateModel template);
   Future<void> addSlot(String templateId, ScheduleSlotModel slot);
-  Future<void> addLog(String templateId, String slotId, ScheduleLogModel log);
+  Future<void> addLog(String templateId, String slotId, String logId, DateTime date);
 
   /// Add template plus its slots in one operation (use when enrolling)
   Future<void> addTemplateWithSlots(ScheduleTemplateModel template, List<ScheduleSlotModel> slots);
@@ -99,19 +99,19 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
   }
 
   @override
-  Future<void> addLog(String templateId, String slotId, ScheduleLogModel log) async {
+  Future<void> addLog(String templateId, String slotId, String logId, DateTime date) async {
     await _firestore
         .collection('schedules')
         .doc(templateId)
         .collection('slots')
         .doc(slotId)
         .collection('logs')
-        .doc(log.id)
+        .doc(logId)
         .set({
-      'date': log.date,
-      'status': log.status,
-      'checkInAt': log.checkInAt,
-      'note': log.note,
+      'date': date,
+      'status': 'pending',
+      'checkInAt': null,
+      'note': '',
     });
   }
 

@@ -35,37 +35,68 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       final slots = await datasource.getSlots(template.id);
 
       for (final slot in slots) {
-        // 3. filter เฉพาะ slot ที่มี log ในวันนั้น
-        final logs = await datasource.getLogs(template.id, slot.id);
-        final hasLogForToday = logs.any(
-          (log) =>
-              log.date.toDate().year == date.year &&
-              log.date.toDate().month == date.month &&
-              log.date.toDate().day == date.day,
-        );
-        if (!hasLogForToday) continue;
+        
+        // ตรวจสอบว่า slot นี้ตรงกับวันในสัปดาห์หรือไม่
+        final dayOfWeekMap = {
+          'monday': 1,
+          'tuesday': 2,
+          'wednesday': 3,
+          'thursday': 4,
+          'friday': 5,
+          'saturday': 6,
+          'sunday': 7,
+        };
+        final slotDayOfWeek = slot.dayOfWeek is int
+            ? slot.dayOfWeek
+            : dayOfWeekMap[slot.dayOfWeek.toString().toLowerCase()] ?? 0;
+        final currentDayOfWeek = date.weekday; // 1=จันทร์, 7=อาทิตย์
+        // AppLogger.debug('Checking slot ${slot.id} for dayOfWeek $slotDayOfWeek against date $date (weekday $currentDayOfWeek)');
 
-        // หา log ของวันนั้น
-        final logForToday = logs.firstWhere(
-          (log) =>
-              log.date.toDate().year == date.year &&
-              log.date.toDate().month == date.month &&
-              log.date.toDate().day == date.day,
-          orElse: () => ScheduleLogModel(
-            id: '',
-            date: Timestamp.fromDate(date),
-            status: 'none',
-            checkInAt: null,
-            note: null,
-          ),
+        // ถ้า dayofweek ไม่ตรงกับ slot ให้ข้าม slot นี้
+        if (slotDayOfWeek != currentDayOfWeek) {
+          continue;
+        }
+
+        // 3. filter เฉพาะ slot ที่มี log ในวันนั้น ถ้าไม่มีให้สร้างใหม่
+        final logs = await datasource.getLogs(template.id, slot.id);
+        final logForToday = logs.cast<ScheduleLogModel?>().firstWhere(
+          (log) {
+            final logDate = log?.date.toDate();
+            return logDate?.year == date.year &&
+             logDate?.month == date.month &&
+             logDate?.day == date.day;
+          },
+          orElse: () => null,
         );
+
+        ScheduleLogModel? log = logForToday;
+        if (log == null) {
+          final newLogId = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+          await datasource.addLog(template.id, slot.id, newLogId, date);
+          final updatedLogs = await datasource.getLogs(template.id, slot.id);
+          log = updatedLogs.cast<ScheduleLogModel?>().firstWhere(
+            (l) {
+              final logDate = l?.date.toDate();
+              return logDate?.year == date.year &&
+               logDate?.month == date.month &&
+               logDate?.day == date.day;
+            },
+            orElse: () => ScheduleLogModel(
+              id: newLogId,
+              date: Timestamp.fromDate(date),
+              status: 'none',
+              checkInAt: null,
+              note: null,
+            ),
+          );
+        }
 
         // 5. Map ออกมาเป็น ScheduleTimelineEntity
         results.add(
           ScheduleTimelineEntity(
             templateId: template.id,
             slotId: slot.id,
-            logId: logForToday.id,
+            logId: log?.id ?? '',
             courseCode: template.courseCode,
             courseNameEng: template.courseNameEng,
             courseNameTh: template.courseNameTh,
@@ -73,8 +104,8 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
             room: slot.room,
             startTime: _parseTimeOfDay(slot.startTime),
             endTime: _parseTimeOfDay(slot.endTime),
-            note: logForToday.note ?? '',
-            isCheckin: logForToday.status == "checked_in",
+            note: log?.note ?? '',
+            isCheckin: log?.status == "checked_in",
           ),
         );
       }
@@ -91,6 +122,8 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       }
       return aMinute.compareTo(bMinute);
     });
+
+    // AppLogger.debug('Loaded day schedule for $date: ${results.length} items');
 
     return results;
   }
