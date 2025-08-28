@@ -53,7 +53,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     if (currentState is ScheduleLoaded) {
       selectedDate = currentState.selectedDate;
     }
-    emit(ScheduleLoading());
     try {
       await checkInClass(event.templateId, event.slotId, event.logId);
       final dateToUse = selectedDate ?? DateTime.now();
@@ -70,7 +69,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     if (currentState is ScheduleLoaded) {
       selectedDate = currentState.selectedDate;
     }
-    emit(ScheduleLoading());
     try {
       await updateClass(
         event.templateId,
