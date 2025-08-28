@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:campus_life_hub/core/core_modules.dart';
 
-import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
-
 import '../widgets/time_line_widget.dart';
 import '../widgets/schedule_card_widget.dart';
 import '../widgets/weekdate_selector_widget.dart';
@@ -98,8 +96,8 @@ class SchedulePage extends StatelessWidget {
                         top += 120;
                         } else {
                         var pos =  ((nextStart - _convertTimeOfDayToMinutes(data[i].startTime)) ~/ 10) > 12 
-                              ? 6
-                              : ((nextStart - _convertTimeOfDayToMinutes(data[i].startTime)) ~/ 10);
+                            ? 6
+                            : ((nextStart - _convertTimeOfDayToMinutes(data[i].startTime)) ~/ 10);
                         top += 10 * pos;
                         }
                       }
@@ -113,38 +111,28 @@ class SchedulePage extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 20.0, bottom: 20.0, right: 8.0),
                           child: Column(
                           children: List.generate(data.length, (index) {
-                            return BlocSelector<ScheduleBloc, ScheduleState, ScheduleTimelineEntity>(
-                            selector: (state) {
-                              if (state is ScheduleLoaded && index < state.schedules.length) {
-                              return state.schedules[index];
-                              }
-                              // fallback, should not happen
-                              return data[index];
-                            },
-                            builder: (context, item) {
-                              final isLast = index == data.length - 1;
-                              final nextItem = !isLast ? data[index + 1] : null;
+                            final item = data[index];
+                            final isLast = index == data.length - 1;
+                            final nextItem = !isLast ? data[index + 1] : null;
 
-                              final itemStartMinutes = _convertTimeOfDayToMinutes(item.startTime);
-                              final nextStartMinutes = nextItem != null ? _convertTimeOfDayToMinutes(nextItem.startTime) : 0;
+                            final itemStartMinutes = _convertTimeOfDayToMinutes(item.startTime);
+                            final nextStartMinutes = nextItem != null ? _convertTimeOfDayToMinutes(nextItem.startTime) : 0;
 
-                              var widgets = <Widget>[
-                              if (itemStartMinutes != nextStartMinutes || index != 0)
-                                TimeLineWidget(startTime: item.startTime, endTime: item.endTime, isEnd: isLast),
-                              ];
-                              if (!isLast && nextItem != null) {
-                              final itemEndMinutes = _convertTimeOfDayToMinutes(item.endTime);
-                              widgets.add(TimeLineWidget(
-                                numberOfLine: itemEndMinutes <= nextStartMinutes
-                                ? 12
-                                : ((nextStartMinutes - itemStartMinutes) ~/ 10) > 12
-                                  ? 6
-                                  : ((nextStartMinutes - itemStartMinutes) ~/ 10),
-                              ));
-                              }
-                              return Column(children: widgets);
-                            },
-                            );
+                            var widgets = <Widget>[
+                            if (itemStartMinutes != nextStartMinutes || index != 0)
+                              TimeLineWidget(startTime: item.startTime, endTime: item.endTime, isEnd: isLast),
+                            ];
+                            if (!isLast && nextItem != null) {
+                            final itemEndMinutes = _convertTimeOfDayToMinutes(item.endTime);
+                            widgets.add(TimeLineWidget(
+                              numberOfLine: itemEndMinutes <= nextStartMinutes
+                              ? 12
+                              : ((nextStartMinutes - itemStartMinutes) ~/ 10) > 12
+                                ? 6
+                                : ((nextStartMinutes - itemStartMinutes) ~/ 10),
+                            ));
+                            }
+                            return Column(children: widgets);
                           }),
                           ),
                         ),
@@ -153,24 +141,15 @@ class SchedulePage extends StatelessWidget {
                           height: cardPositions.last.top + 170,
                           child: Stack(
                           children: List.generate(data.length, (index) {
-                            return BlocSelector<ScheduleBloc, ScheduleState, ScheduleTimelineEntity>(
-                            selector: (state) {
-                              if (state is ScheduleLoaded && index < state.schedules.length) {
-                              return state.schedules[index];
-                              }
-                              return data[index];
-                            },
-                            builder: (context, item) {
-                              final pos = cardPositions[index];
-                              return Positioned(
-                              left: pos.left,
-                              top: pos.top,
-                              child: ScheduleCardWidget(
-                                data: item,
-                                halfWidth: pos.halfWidth,
-                              ),
-                              );
-                            },
+                            final item = data[index];
+                            final pos = cardPositions[index];
+                            return Positioned(
+                            left: pos.left,
+                            top: pos.top,
+                            child: ScheduleCardWidget(
+                              data: item,
+                              halfWidth: pos.halfWidth,
+                            ),
                             );
                           }),
                           ),
