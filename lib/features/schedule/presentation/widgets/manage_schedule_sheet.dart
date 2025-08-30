@@ -1,6 +1,4 @@
-import 'package:campus_life_hub/core/logging/logging.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_template_entity.dart';
-import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

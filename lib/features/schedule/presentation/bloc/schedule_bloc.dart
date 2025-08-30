@@ -1,4 +1,3 @@
-import 'package:campus_life_hub/core/logging/logging.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
