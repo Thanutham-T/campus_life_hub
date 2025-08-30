@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_template_entity.dart';
 
 import '../bloc/schedule_bloc.dart';
+import '../bloc/schedule_event.dart';
 import '../bloc/schedule_state.dart';
 
 import '../widgets/manage_schedule_sheet.dart';
@@ -72,12 +73,17 @@ class SelectScheduleSheetWidget extends StatelessWidget {
                               ),
                               onPressed: selectedTemplate != null
                                   ? () {
+                                      final scheduleBloc = context.read<ScheduleBloc>();
+
                                       showModalBottomSheet(
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (context) {
-                                          return ManageScheduleSheet(
-                                            selectedSubject: selectedTemplate);
+                                          scheduleBloc.add(GetAllSlotsOfTemplate(templateId: selectedTemplate!.id));
+                                          return BlocProvider.value(
+                                            value: scheduleBloc,
+                                            child: ManageScheduleSheet(selectedSubject: selectedTemplate),
+                                          );
                                         },
                                       );
                                     }
