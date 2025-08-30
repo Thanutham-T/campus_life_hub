@@ -59,13 +59,13 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    scheduleTemplate.courseNameEng,
+                    '${scheduleTemplate.courseNameEng}\n${scheduleTemplate.courseNameTh}',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                   const SizedBox(height: 35),
-                  const Text(
-                    'Section 3',
+                  Text(
+                    'Sction: ${scheduleTemplate.sectionCode}',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Row(
