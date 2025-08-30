@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:campus_life_hub/features/schedule/domain/repositories/schedule_repository.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
+import 'package:campus_life_hub/features/schedule/domain/entities/schedule_template_entity.dart';
 
 import '../datasources/remotes/schedule_remote_firestore.dart';
 // import '../models/schedule_template_model.dart';
@@ -136,5 +137,18 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   @override
   Future<void> updateClassInfo(String templateId, String slotId, String logId, String newRoom, String newNote) async {
     await datasource.updateClassForLog(templateId, slotId, logId, newRoom, newNote);
+  }
+
+  @override
+  Future<List<ScheduleTemplateEntity>> getAllScheduleTemplates(String userId) async {
+    final models = await datasource.getTemplates(userId);
+    return models.map((model) => ScheduleTemplateEntity(
+      id: model.id,
+      courseCode: model.courseCode,
+      courseNameEng: model.courseNameEng,
+      courseNameTh: model.courseNameTh,
+      sectionCode: model.sectionCode, userId: '', courseId: '', sectionId: '', instructor: '', createdAt: DateTime.now(),
+      // Add other fields as needed
+    )).toList();
   }
 }

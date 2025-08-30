@@ -18,4 +18,17 @@ class ScheduleSlotEntity {
     this.isActive = true,
     this.isCustom = false,
   });
+
+  factory ScheduleSlotEntity.fromMap(Map<String, dynamic> map) {
+    return ScheduleSlotEntity(
+      id: map['id'] ?? '',
+      dayOfWeek: map['dayOfWeek'] ?? '',
+      startTime: map['startTime'] ?? '',
+      endTime: map['endTime'] ?? '',
+      room: map['room'] ?? '',
+      origin: map['origin'] ?? 'course',
+      isActive: map['isActive'] ?? true,
+      isCustom: map['isCustom'] ?? false,
+    );
+  }
 }

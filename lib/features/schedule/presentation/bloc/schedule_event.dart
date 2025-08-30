@@ -66,3 +66,14 @@ class UpdateClass extends ScheduleEvent {
   @override
   List<Object?> get props => [userId, templateId, slotId, logId, newRoom, newNote];
 }
+
+class GetAllScheduleTemplates extends ScheduleEvent {
+  final String userId;
+
+  const GetAllScheduleTemplates({
+    required this.userId,
+  });
+
+  @override
+  List<Object?> get props => [userId];
+}

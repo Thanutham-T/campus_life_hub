@@ -5,6 +5,7 @@ class ScheduleTemplateEntity {
   final String id;
   final String userId;
   final String courseId;
+  final String courseCode;
   final String courseNameEng;
   final String courseNameTh;
   final String sectionId;
@@ -17,12 +18,13 @@ class ScheduleTemplateEntity {
     required this.id,
     required this.userId,
     required this.courseId,
+    required this.courseCode,
     required this.courseNameEng,
     required this.courseNameTh,
     required this.sectionId,
     required this.sectionCode,
     required this.instructor,
     required this.createdAt,
-    required this.slots,
+    this.slots = const [],
   });
 }
