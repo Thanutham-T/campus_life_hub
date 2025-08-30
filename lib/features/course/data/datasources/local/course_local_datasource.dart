@@ -23,7 +23,7 @@ class FakeCourseDataSource implements CourseDataSource {
         CourseSectionModel(
           id: 'S001',
           sectionCode: 'A',
-          instructor: 'Dr. Smith',
+          instructor: ['Dr. Smith'],
           schedules: [
             SectionScheduleModel(
               dayOfWeek: 'Monday',
@@ -53,7 +53,7 @@ class FakeCourseDataSource implements CourseDataSource {
         CourseSectionModel(
           id: 'S002',
           sectionCode: 'A',
-          instructor: 'Prof. Johnson',
+          instructor: ['Prof. Johnson'],
           schedules: [
             SectionScheduleModel(
               dayOfWeek: 'Tuesday',
@@ -72,7 +72,7 @@ class FakeCourseDataSource implements CourseDataSource {
           CourseSectionModel(
             id: 'S003',
             sectionCode: 'B',
-            instructor: 'Dr. Brown',
+            instructor: ['Dr. Brown'],
             schedules: [
               SectionScheduleModel(
                 dayOfWeek: 'Friday',

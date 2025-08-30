@@ -17,15 +17,20 @@ class LoadEnrolledCourses extends CourseEvent {
 
 class SearchCourses extends CourseEvent {
   final String query;
-  SearchCourses(this.query);
+  final bool isEnrolledView;
+  final String userId;
+  SearchCourses(this.query, this.isEnrolledView, this.userId);
 }
 
 class EnrollToCourse extends CourseEvent {
+  final String courseId;
   final String sectionId;
-  EnrollToCourse(this.sectionId);
+  final String userId;
+  EnrollToCourse(this.courseId, this.sectionId, this.userId);
 }
 
 class WithdrawFromCourse extends CourseEvent {
+  final String userId;
   final String sectionId;
-  WithdrawFromCourse(this.sectionId);
+  WithdrawFromCourse(this.userId, this.sectionId);
 }

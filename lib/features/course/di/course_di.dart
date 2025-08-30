@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 
-import '../data/datasources/local/course_local_datasource.dart';
+// import '../data/datasources/local/course_local_datasource.dart';
+import '../data/datasources/remote/course_remote_firestore.dart';
 
 import '../data/repositories/course_repository_impl.dart';
 import '../domain/repositories/course_repository.dart';
@@ -17,7 +18,8 @@ import '../presentation/bloc/course_bloc.dart';
 
 Future<void> registerCourseDI(GetIt sl) async {
   // Data Sources
-  sl.registerLazySingletonAsync<CourseDataSource>(() async => FakeCourseDataSource());
+  // sl.registerLazySingletonAsync<CourseDataSource>(() async => FakeCourseDataSource());
+  sl.registerLazySingletonAsync<CourseDataSource>(() async => CourseRemoteFirestore());
 
   // Repositories
   sl.registerLazySingletonAsync<CourseRepository>(() async => CourseRepositoryImpl(await sl.getAsync<CourseDataSource>()));

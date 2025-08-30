@@ -9,9 +9,10 @@ class CourseLoading extends CourseState {}
 
 class CourseLoaded extends CourseState {
   final List<CourseEntity> courses;
+  final List<CourseEntity> queryCourses;
   final bool isEnrolledView;
 
-  CourseLoaded(this.courses, {this.isEnrolledView = false});
+  CourseLoaded(this.courses, this.queryCourses, {this.isEnrolledView = false});
 }
 
 class CourseEnrolling extends CourseState {}

@@ -2,9 +2,7 @@ import 'package:campus_life_hub/features/course/domain/entities/course_entity.da
 import 'package:campus_life_hub/features/course/domain/entities/course_section.dart';
 import 'package:campus_life_hub/features/course/domain/entities/section_schedule.dart';
 
-
 class CourseModel extends CourseEntity {
-
   final String semester;
 
   CourseModel({
@@ -18,18 +16,43 @@ class CourseModel extends CourseEntity {
     required this.semester,
   });
 
-  factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
-        id: json['id'],
-        code: json['code'],
-        nameEn: json['nameEn'],
-        nameTh: json['nameTh'],
-        description: json['description'],
-        credit: json['credit'],
-        sections: (json['sections'] as List)
-            .map((e) => CourseSectionModel.fromJson(e) as CourseSection)
-            .toList(),
-        semester: json['semester'] as String,
-      );
+  factory CourseModel.fromJson(Map<String, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    return CourseModel(
+      id: map['id'],
+      code: map['code'],
+      nameEn: map['nameEn'],
+      nameTh: map['nameTh'],
+      description: map['description'],
+      credit: map['credit'],
+      sections: (map['sections'] as List? ?? [])
+          .map((e) => CourseSectionModel.fromAny(e))
+          .toList(),
+      semester: map['semester'] as String,
+    );
+  }
+
+  CourseModel copyWith({
+    String? id,
+    String? code,
+    String? nameEn,
+    String? nameTh,
+    String? description,
+    int? credit,
+    List<CourseSection>? sections,
+    String? semester,
+  }) {
+    return CourseModel(
+      id: id ?? this.id,
+      code: code ?? this.code,
+      nameEn: nameEn ?? this.nameEn,
+      nameTh: nameTh ?? this.nameTh,
+      description: description ?? this.description,
+      credit: credit ?? this.credit,
+      sections: sections ?? this.sections,
+      semester: semester ?? this.semester,
+    );
+  }
 }
 
 class CourseSectionModel extends CourseSection {
@@ -40,12 +63,28 @@ class CourseSectionModel extends CourseSection {
     required super.schedules,
   });
 
-  factory CourseSectionModel.fromJson(Map<String, dynamic> json) => CourseSectionModel(
-        id: json['id'],
-        sectionCode: json['sectionCode'],
-        instructor: json['instructor'],
-        schedules: (json['schedules'] as List)
-            .map((e) => SectionScheduleModel.fromJson(e))
+  factory CourseSectionModel.fromAny(dynamic json) {
+    if (json is CourseSectionModel) return json;
+    if (json is CourseSection) return CourseSectionModel.fromEntity(json);
+    final map = Map<String, dynamic>.from(json as Map);
+    return CourseSectionModel(
+      id: map['id'],
+      sectionCode: map['sectionCode'],
+      instructor: List<String>.from(map['instructor'] ?? []),
+      schedules: (map['schedules'] as List? ?? [])
+          .map((e) => SectionScheduleModel.fromAny(e))
+          .toList(),
+    );
+  }
+
+  factory CourseSectionModel.fromEntity(CourseSection e) => CourseSectionModel(
+        id: e.id,
+        sectionCode: e.sectionCode,
+        instructor: e.instructor,
+        schedules: e.schedules
+            .map((s) => s is SectionScheduleModel
+                ? s
+                : SectionScheduleModel.fromEntity(s))
             .toList(),
       );
 }
@@ -58,10 +97,23 @@ class SectionScheduleModel extends SectionSchedule {
     required super.room,
   });
 
-  factory SectionScheduleModel.fromJson(Map<String, dynamic> json) => SectionScheduleModel(
-        dayOfWeek: json['dayOfWeek'],
-        startTime: json['startTime'],
-        endTime: json['endTime'],
-        room: json['room'],
+  factory SectionScheduleModel.fromAny(dynamic json) {
+    if (json is SectionScheduleModel) return json;
+    if (json is SectionSchedule) return SectionScheduleModel.fromEntity(json);
+    final map = Map<String, dynamic>.from(json as Map);
+    return SectionScheduleModel(
+      dayOfWeek: map['dayOfWeek'],
+      startTime: map['startTime'],
+      endTime: map['endTime'],
+      room: map['room'],
+    );
+  }
+
+  factory SectionScheduleModel.fromEntity(SectionSchedule e) =>
+      SectionScheduleModel(
+        dayOfWeek: e.dayOfWeek,
+        startTime: e.startTime,
+        endTime: e.endTime,
+        room: e.room,
       );
 }

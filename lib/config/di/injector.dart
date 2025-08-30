@@ -14,6 +14,8 @@ import '../../features/announcement/data/datasources/user_announcement_firebase_
 import '../../features/announcement/data/repositories/announcement_repository_impl.dart';
 import '../../features/announcement/domain/repositories/announcement_repository.dart';
 
+import '../../features/schedule/di/schedule_register_di.dart';
+
 
 final sl = GetIt.instance;
 
@@ -47,6 +49,7 @@ Future<void> initNonCriticalServices() async {
       userDataSource: sl<UserAnnouncementDataSource>(),
     ),
   );
+  await registerScheduleDI(sl);
 }
 
 /// Initialize external dependencies

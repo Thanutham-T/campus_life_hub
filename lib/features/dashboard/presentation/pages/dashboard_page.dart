@@ -216,10 +216,16 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildToolsSection(BuildContext context) {
     final tools = [
       ToolItem(
+        title: AppStrings.course,
+        icon: Icons.book,
+        backgroundColor: Colors.blue,
+        onTap: () => context.go(Routes.course),
+      ),
+      ToolItem(
         title: AppStrings.schedule,
         icon: Icons.calendar_today,
         backgroundColor: Colors.red,
-        onTap: () => context.go(Routes.course),
+        onTap: () => context.go(Routes.schedule),
       ),
       ToolItem(
         title: AppStrings.announcements,

@@ -1,3 +1,5 @@
+// import 'package:campus_life_hub/core/logging/logging.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,9 +9,15 @@ import '../di/injector.dart' as di;
 // import '../../features/schedule/presentation/bloc/schedule_event.dart';
 // import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
 
+// Course route builder
 import '../../features/course/presentation/pages/course_page.dart';
 import '../../features/course/presentation/bloc/course_bloc.dart';
 import '../../features/course/presentation/bloc/course_event.dart';
+
+// Schedule route builder
+import '../../features/schedule/presentation/pages/schedule_page.dart';
+import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
+import '../../features/schedule/presentation/bloc/schedule_event.dart';
 
 // Study groups route builder
 import '../../features/study_group/presentation/pages/study_groups_page.dart';
@@ -18,21 +26,27 @@ import '../../features/study_group/presentation/bloc/study_group_event.dart';
 
 
 class RouteBuilders {
-  // static Widget buildSchedulePageWithBloc() {
-  //   return FutureBuilder<ScheduleBloc>(
-  //     future: sl.getAsync<ScheduleBloc>(),
-  //     builder: (context, snapshot) {
-  //       if (snapshot.connectionState == ConnectionState.done) {
-  //         return BlocProvider.value(
-  //           value: snapshot.data!..add(LoadSchedule(DateTime.now())),
-  //           child: const SchedulePage(),
-  //         );
-  //       } else {
-  //         return const Center(child: CircularProgressIndicator());
-  //       }
-  //     },
-  //   );
-  // }
+  static Widget buildSchedulePageWithBloc() {
+    return FutureBuilder<ScheduleBloc>(
+      future: di.sl.getAsync<ScheduleBloc>(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return BlocProvider.value(
+              value: snapshot.data!..add(LoadTodaySchedule(userId: FirebaseAuth.instance.currentUser!.uid)),
+              child: const SchedulePage(),
+            );
+          } else {
+            return const Center(child: Text('เกิดข้อผิดพลาดในการทำงาน กรุณาลองใหม่อีกครั้ง'));
+          }
+        } else if (snapshot.hasError) {
+          return const Center(child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'));
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
 
   static Widget buildCoursePageWithBloc() {
     return FutureBuilder<CourseBloc>(
@@ -40,7 +54,7 @@ class RouteBuilders {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return BlocProvider.value(
-            value: snapshot.data!..add(LoadCourseWithEnrollStatus('1')),
+            value: snapshot.data!..add(LoadCourseWithEnrollStatus(FirebaseAuth.instance.currentUser!.uid)),
             child: const CoursePage(),
           );
         } else {

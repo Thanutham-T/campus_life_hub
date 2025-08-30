@@ -14,7 +14,6 @@ import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/user/presentation/pages/login_page.dart';
 import '../../features/user/presentation/pages/register_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
-import '../../features/course_schedule/presentation/pages/schedule_page.dart';
 import '../../features/campus_event/presentation/pages/event_page.dart';
 import '../../features/campus_event/presentation/pages/event_detail_page.dart';
 import '../../features/campus_map/presentation/pages/campus_map_page.dart';
@@ -57,7 +56,7 @@ class AppRouter {
         routes: [
           GoRoute(path: Routes.dashboard, name: 'dashboard', builder: (context, state) => const DashboardPage()),
           GoRoute(path: Routes.profile, name: 'profile', builder: (context, state) => const ProfilePage()),
-          GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => const SchedulePage()),
+          GoRoute(path: Routes.schedule, name: 'schedule', builder: (context, state) => RouteBuilders.buildSchedulePageWithBloc()),
           GoRoute(path: Routes.course, name: 'course', builder: (context, state) => RouteBuilders.buildCoursePageWithBloc()),
           GoRoute(path: Routes.events, name: 'events', builder: (context, state) => const EventPage()),
           GoRoute(
