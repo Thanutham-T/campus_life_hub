@@ -29,7 +29,7 @@ abstract class ScheduleRemoteDataSource {
 class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-@override
+  @override
   Future<List<ScheduleTemplateModel>> getTemplates(String userId) async {
     final query = await _firestore
         .collection('schedules')
