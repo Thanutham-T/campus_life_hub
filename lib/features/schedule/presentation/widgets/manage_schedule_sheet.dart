@@ -1,7 +1,12 @@
+import 'package:campus_life_hub/core/logging/logging.dart';
+import 'package:campus_life_hub/features/schedule/domain/entities/schedule_template_entity.dart';
+import 'package:campus_life_hub/features/user/presentation/bloc/auth_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/schedule_bloc.dart';
+import '../bloc/schedule_event.dart';
 import '../bloc/schedule_state.dart';
 import '../widgets/schdule_edit_card_widget.dart';
 
@@ -15,8 +20,34 @@ class ManageScheduleSheet extends StatefulWidget {
 }
 
 class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
+  late List<EditableSlot> editableSlots;
   final List<String> _notifyTimes = ['5 นาที', '10 นาที', '15 นาที', '30 นาที'];
   String _selectedNotifyTime = '15 นาที';
+
+  @override
+  void initState() {
+    super.initState();
+    editableSlots = [];
+  }
+
+  void _initializeEditableSlots(ScheduleTemplateEntity scheduleTemplate) {
+    editableSlots = scheduleTemplate.slots.map((slot) {
+      return EditableSlot(
+        id: slot.id,
+        day: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        room: slot.room,
+      );
+    }).toList();
+  }
+  
+  void _updateSlot(int index, EditableSlot newSlot) {
+    setState(() {
+      editableSlots[index] = newSlot;
+    });
+    // AppLogger.debug('New slot data: day=${newSlot.day}, startTime=${newSlot.startTime}, endTime=${newSlot.endTime}, room=${newSlot.room}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +58,16 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
             (template) => template.id == widget.selectedSubjectId,
             orElse: () => state.templates.first,
           );
+          if (editableSlots.isEmpty) {
+            _initializeEditableSlots(scheduleTemplate);
+          }
+
           return SizedBox(
             height: MediaQuery.of(context).size.height * 0.75,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Top bar with close and check
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -51,9 +85,16 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
                       IconButton(
                         icon: const Icon(Icons.check),
                         onPressed: () {
+                          context.read<ScheduleBloc>().add(
+                                UpdateScheduleTemplate(
+                                  userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+                                  templateId: scheduleTemplate.id,
+                                  newSlots: editableSlots.map((e) => e.toEntity()).toList(),
+                                ),
+                              );
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
-                        }, // Save action
+                        },
                       ),
                     ],
                   ),
@@ -92,24 +133,15 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
                   ),
                   const SizedBox(height: 5),
                   Expanded(
-                    child: ListView(
-                      children: scheduleTemplate.slots.map((slot) {
-                        final dayMap = {
-                          'Monday': 'วันจันทร์',
-                          'Tuesday': 'วันอังคาร',
-                          'Wednesday': 'วันพุธ',
-                          'Thursday': 'วันพฤหัสบดี',
-                          'Friday': 'วันศุกร์',
-                          'Saturday': 'วันเสาร์',
-                          'Sunday': 'วันอาทิตย์',
-                        };
-                        final thaiDay = dayMap[slot.dayOfWeek] ?? slot.dayOfWeek;
+                    child: ListView.builder(
+                      itemCount: editableSlots.length,
+                      itemBuilder: (context, index) {
+                        final slot = editableSlots[index];
                         return ScheduleCard(
-                          day: thaiDay,
-                          time: '${slot.startTime} - ${slot.endTime}',
-                          room: slot.room,
+                          slot: slot,
+                          onChanged: (newSlot) => _updateSlot(index, newSlot),
                         );
-                      }).toList(),
+                      },
                     ),
                   ),
                   const SizedBox(height: 14),

@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
 
-class ScheduleCard extends StatefulWidget {
-  final String day;
-  final String time;
-  final String room;
+import 'package:campus_life_hub/features/schedule/domain/entities/schedule_slot_entity.dart';
 
-  const ScheduleCard({
+
+class EditableSlot {
+  String id;
+  String day;
+  String startTime;
+  String endTime;
+  String room;
+
+  EditableSlot({
+    required this.id,
     required this.day,
-    required this.time,
+    required this.startTime,
+    required this.endTime,
     required this.room,
-    super.key,
   });
+
+  ScheduleSlotEntity toEntity() {
+    return ScheduleSlotEntity(
+      id: id,
+      dayOfWeek: day,
+      startTime: startTime,
+      endTime: endTime,
+      room: room,
+    );
+  }
+}
+
+class ScheduleCard extends StatefulWidget {
+  final EditableSlot slot;
+  final ValueChanged<EditableSlot> onChanged;
+
+  const ScheduleCard({required this.slot, required this.onChanged, super.key});
 
   @override
   State<ScheduleCard> createState() => _ScheduleCardState();
@@ -25,14 +48,26 @@ class _ScheduleCardState extends State<ScheduleCard> {
   @override
   void initState() {
     super.initState();
-    selectedDay = widget.day;
-    roomController = TextEditingController(text: widget.room);
+    selectedDay = widget.slot.day;
+    roomController = TextEditingController(text: widget.slot.room);
+    startTimeController = TextEditingController(text: widget.slot.startTime);
+    endTimeController = TextEditingController(text: widget.slot.endTime);
 
-    // Split the time string into start and end
-    final times = widget.time.split('-');
-    startTimeController = TextEditingController(text: times[0].trim());
-    endTimeController = TextEditingController(
-      text: times.length > 1 ? times[1].trim() : '',
+    // listen เพื่อส่งค่ากลับทุกครั้งที่มีการเปลี่ยน
+    roomController.addListener(_notifyParent);
+    startTimeController.addListener(_notifyParent);
+    endTimeController.addListener(_notifyParent);
+  }
+
+  void _notifyParent() {
+    widget.onChanged(
+      EditableSlot(
+        id: widget.slot.id,
+        day: selectedDay,
+        startTime: startTimeController.text,
+        endTime: endTimeController.text,
+        room: roomController.text,
+      ),
     );
   }
 
@@ -49,17 +84,29 @@ class _ScheduleCardState extends State<ScheduleCard> {
     TextEditingController controller,
   ) async {
     final timeParts = controller.text.split(':');
+    final initialHour = int.tryParse(timeParts[0]) ?? 0;
+    final initialMinute =
+        int.tryParse(timeParts.length > 1 ? timeParts[1] : '0') ?? 0;
     final initialTime = TimeOfDay(
-      hour: int.tryParse(timeParts[0]) ?? 8,
-      minute: int.tryParse(timeParts.length > 1 ? timeParts[1] : '0') ?? 0,
+      hour: initialHour.clamp(0, 23),
+      minute: initialMinute.clamp(0, 59),
     );
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: initialTime,
+      initialEntryMode: TimePickerEntryMode.input,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+      helpText: 'เลือกเวลาในช่วง (00:00 - 23:59)',
     );
     if (picked != null) {
       setState(() {
-        controller.text = picked.format(context);
+        controller.text =
+            '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       });
     }
   }
@@ -69,10 +116,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8.0,
-          vertical: 12.0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -85,28 +129,38 @@ class _ScheduleCardState extends State<ScheduleCard> {
                     value: selectedDay,
                     items:
                         <String>[
-                          'วันจันทร์',
-                          'วันอังคาร',
-                          'วันพุธ',
-                          'วันพฤหัสบดี',
-                          'วันศุกร์',
-                          'วันเสาร์',
-                          'วันอาทิตย์',
+                          'Monday',
+                          'Tuesday',
+                          'Wednesday',
+                          'Thursday',
+                          'Friday',
+                          'Saturday',
+                          'Sunday',
                         ].map((String value) {
+                          final Map<String, String> enToThaiDay = {
+                            'Monday': 'วันจันทร์',
+                            'Tuesday': 'วันอังคาร',
+                            'Wednesday': 'วันพุธ',
+                            'Thursday': 'วันพฤหัสบดี',
+                            'Friday': 'วันศุกร์',
+                            'Saturday': 'วันเสาร์',
+                            'Sunday': 'วันอาทิตย์',
+                          };
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(
-                              value,
+                              enToThaiDay[value] ?? value,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           );
                         }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
+                    onChanged: (value) {
+                      if (value != null) {
                         setState(() {
-                          selectedDay = newValue;
+                          selectedDay = value;
+                          _notifyParent();
                         });
                       }
                     },
