@@ -18,9 +18,8 @@ class SelectScheduleSheetWidget extends StatelessWidget {
       builder: (context, state) {
         if (state is ScheduleLoaded) {
           List<ScheduleTemplateEntity> templates = state.templates;
-          ScheduleTemplateEntity? selectedTemplate = templates.isNotEmpty
-              ? templates[0]
-              : null;
+          ScheduleTemplateEntity? selectedTemplate = templates.isNotEmpty ? templates[0] : null;
+
           return StatefulBuilder(
             builder: (context, setState) {
               return SizedBox(
@@ -79,10 +78,9 @@ class SelectScheduleSheetWidget extends StatelessWidget {
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (context) {
-                                          scheduleBloc.add(GetAllSlotsOfTemplate(templateId: selectedTemplate!.id));
                                           return BlocProvider.value(
-                                            value: scheduleBloc,
-                                            child: ManageScheduleSheet(selectedSubject: selectedTemplate),
+                                            value: scheduleBloc..add(GetAllSlotsOfTemplate(templateId: selectedTemplate!.id)),
+                                            child: ManageScheduleSheet(selectedSubjectId: selectedTemplate!.id),
                                           );
                                         },
                                       );

@@ -1,111 +1,139 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:campus_life_hub/features/schedule/domain/entities/schedule_template_entity.dart';
-
+import '../bloc/schedule_bloc.dart';
+import '../bloc/schedule_state.dart';
 import '../widgets/schdule_edit_card_widget.dart';
 
+class ManageScheduleSheet extends StatefulWidget {
+  final String? selectedSubjectId;
 
-class ManageScheduleSheet extends StatelessWidget {
-  final ScheduleTemplateEntity? selectedSubject;
+  const ManageScheduleSheet({super.key, required this.selectedSubjectId});
 
-  const ManageScheduleSheet({super.key, required this.selectedSubject});
+  @override
+  State<ManageScheduleSheet> createState() => _ManageScheduleSheetState();
+}
+
+class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
+  final List<String> _notifyTimes = ['5 นาที', '10 นาที', '15 นาที', '30 นาที'];
+  String _selectedNotifyTime = '15 นาที';
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.75,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Top bar with close and check
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_sharp),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                Text(
-                  selectedSubject!.courseCode,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.check),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                  }, // Save action
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              selectedSubject!.courseNameEng,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
-            const SizedBox(height: 35),
-            const Text(
-              'Section 3',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('แจ้งเตือนก่อนเวลา'),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: '15 นาที',
-                  items: ['5 นาที', '10 นาที', '15 นาที', '30 นาที']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (value) {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 5),
-            Expanded(
-              child: ListView(
+    return BlocBuilder<ScheduleBloc, ScheduleState>(
+      builder: (context, state) {
+        if (state is ScheduleLoaded) {
+          final scheduleTemplate = state.templates.firstWhere(
+            (template) => template.id == widget.selectedSubjectId,
+            orElse: () => state.templates.first,
+          );
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 children: [
-                  ScheduleCard(
-                    day: 'วันจันทร์',
-                    time: '09:00 - 11:50',
-                    room: 'R301 (COE_PSU_LAB)',
+                  // Top bar with close and check
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_sharp),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      Text(
+                        scheduleTemplate.courseCode,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.check),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        }, // Save action
+                      ),
+                    ],
                   ),
-                  ScheduleCard(
-                    day: 'วันจันทร์',
-                    time: '13:00 - 15:50',
-                    room: 'R301 (COE_PSU_LAB)',
+                  const SizedBox(height: 4),
+                  Text(
+                    scheduleTemplate.courseNameEng,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
-                  ScheduleCard(
-                    day: 'วันพุธ',
-                    time: '09:00 - 11:50',
-                    room: 'R301 (COE_PSU_LAB)',
+                  const SizedBox(height: 35),
+                  const Text(
+                    'Section 3',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  ScheduleCard(
-                    day: 'วันพฤหัสบดี',
-                    time: '09:00 - 11:50',
-                    room: 'R301 (COE_PSU_LAB)',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('แจ้งเตือนก่อนเวลา'),
+                      const SizedBox(width: 8),
+                      DropdownButton<String>(
+                        value: _selectedNotifyTime,
+                        items: _notifyTimes
+                            .map(
+                              (e) => DropdownMenuItem(value: e, child: Text(e)),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedNotifyTime = value;
+                            });
+                          }
+                        },
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 5),
+                  Expanded(
+                    child: ListView(
+                      children: scheduleTemplate.slots.map((slot) {
+                        final dayMap = {
+                          'Monday': 'วันจันทร์',
+                          'Tuesday': 'วันอังคาร',
+                          'Wednesday': 'วันพุธ',
+                          'Thursday': 'วันพฤหัสบดี',
+                          'Friday': 'วันศุกร์',
+                          'Saturday': 'วันเสาร์',
+                          'Sunday': 'วันอาทิตย์',
+                        };
+                        final thaiDay = dayMap[slot.dayOfWeek] ?? slot.dayOfWeek;
+                        return ScheduleCard(
+                          day: thaiDay,
+                          time: '${slot.startTime} - ${slot.endTime}',
+                          room: slot.room,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Center(
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.grey[200],
+                      child: IconButton(
+                        icon: const Icon(Icons.add, size: 28),
+                        onPressed: () {}, // Add schedule
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-            Center(
-              child: CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.grey[200],
-                child: IconButton(
-                  icon: const Icon(Icons.add, size: 28),
-                  onPressed: () {}, // Add schedule
-                ),
-              ),
-            ),
-            const SizedBox(height: 5),
-          ],
-        ),
-      ),
+          );
+        } else if (state is ScheduleLoading) {
+          return Center(child: CircularProgressIndicator());
+        } else {
+          return Center(child: Text('No schedule data'));
+        }
+      },
     );
   }
 }
