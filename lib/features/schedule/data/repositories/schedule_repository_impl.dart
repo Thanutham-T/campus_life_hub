@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:campus_life_hub/features/schedule/domain/repositories/schedule_repository.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_template_entity.dart';
+import 'package:campus_life_hub/features/schedule/domain/entities/schedule_slot_entity.dart';
 
 import '../datasources/remotes/schedule_remote_firestore.dart';
 // import '../models/schedule_template_model.dart';
@@ -149,6 +150,22 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       courseNameTh: model.courseNameTh,
       sectionCode: model.sectionCode, userId: '', courseId: '', sectionId: '', instructor: '', createdAt: DateTime.now(),
       // Add other fields as needed
+    )).toList();
+  }
+
+  @override
+  Future<List<ScheduleSlotEntity>> getSlotsOfTemplate(String templateId) async {
+    final models = await datasource.getSlots(templateId);
+    // Return the first slot, or throw if none found
+    if (models.isEmpty) {
+      throw Exception('No slots found for template $templateId');
+    }
+    return models.map((model) => ScheduleSlotEntity(
+      id: model.id,
+      room: model.room,
+      startTime: model.startTime,
+      endTime: model.endTime,
+      dayOfWeek: model.dayOfWeek,
     )).toList();
   }
 }

@@ -77,3 +77,14 @@ class GetAllScheduleTemplates extends ScheduleEvent {
   @override
   List<Object?> get props => [userId];
 }
+
+class GetAllSlotsOfTemplate extends ScheduleEvent {
+  final String templateId;
+
+  const GetAllSlotsOfTemplate({
+    required this.templateId,
+  });
+
+  @override
+  List<Object?> get props => [templateId];
+}

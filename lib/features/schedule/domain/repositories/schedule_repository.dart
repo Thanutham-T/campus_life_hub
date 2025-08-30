@@ -1,5 +1,6 @@
 import '../entities/schedule_timeline_entity.dart';
 import '../entities/schedule_template_entity.dart';
+import '../entities/schedule_slot_entity.dart';
 
 
 abstract class ScheduleRepository {
@@ -7,4 +8,5 @@ abstract class ScheduleRepository {
   Future<void> checkInClass(String templateId, String slotId, String logId);
   Future<void> updateClassInfo(String templateId, String slotId, String logId, String newRoom, String newNote);
   Future<List<ScheduleTemplateEntity>> getAllScheduleTemplates(String userId);
+  Future<List<ScheduleSlotEntity>> getSlotsOfTemplate(String templateId);
 }
