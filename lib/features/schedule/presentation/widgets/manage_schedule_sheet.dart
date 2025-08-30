@@ -39,7 +39,7 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
       );
     }).toList();
   }
-  
+
   void _updateSlot(int index, EditableSlot newSlot) {
     setState(() {
       editableSlots[index] = newSlot;
@@ -84,12 +84,15 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
                         icon: const Icon(Icons.check),
                         onPressed: () {
                           context.read<ScheduleBloc>().add(
-                                UpdateScheduleTemplate(
-                                  userId: FirebaseAuth.instance.currentUser?.uid ?? '',
-                                  templateId: scheduleTemplate.id,
-                                  newSlots: editableSlots.map((e) => e.toEntity()).toList(),
-                                ),
-                              );
+                            UpdateScheduleTemplate(
+                              userId:
+                                  FirebaseAuth.instance.currentUser?.uid ?? '',
+                              templateId: scheduleTemplate.id,
+                              newSlots: editableSlots
+                                  .map((e) => e.toEntity())
+                                  .toList(),
+                            ),
+                          );
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
                         },
@@ -135,9 +138,27 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
                       itemCount: editableSlots.length,
                       itemBuilder: (context, index) {
                         final slot = editableSlots[index];
-                        return ScheduleCard(
-                          slot: slot,
-                          onChanged: (newSlot) => _updateSlot(index, newSlot),
+                        return Dismissible(
+                          key: ValueKey(slot.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            color: Colors.red,
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+                          onDismissed: (direction) {
+                            setState(() {
+                              editableSlots.removeAt(index);
+                            });
+                          },
+                          child: ScheduleCard(
+                            slot: slot,
+                            onChanged: (newSlot) => _updateSlot(index, newSlot),
+                          ),
                         );
                       },
                     ),
@@ -149,7 +170,19 @@ class _ManageScheduleSheetState extends State<ManageScheduleSheet> {
                       backgroundColor: Colors.grey[200],
                       child: IconButton(
                         icon: const Icon(Icons.add, size: 28),
-                        onPressed: () {}, // Add schedule
+                        onPressed: () {
+                          setState(() {
+                            editableSlots.add(
+                              EditableSlot(
+                                id: '',
+                                day: 'Monday',
+                                startTime: '00:00',
+                                endTime: '00:00',
+                                room: '',
+                              ),
+                            );
+                          });
+                        },
                       ),
                     ),
                   ),

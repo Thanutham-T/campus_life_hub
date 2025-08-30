@@ -246,16 +246,26 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
   @override
   Future<void> updateScheduleTemplate(String templateId, List<ScheduleSlotModel> newSlots) async {
     final slotsRef = _firestore.collection('schedules').doc(templateId).collection('slots');
+    final existingSlotsSnap = await slotsRef.get();
+    final existingSlotIds = existingSlotsSnap.docs.map((doc) => doc.id).toSet();
+    final newSlotIds = newSlots.map((slot) => slot.id).toSet();
+
+    // Delete slots not in newSlots
+    for (final slotId in existingSlotIds.difference(newSlotIds)) {
+      await slotsRef.doc(slotId).delete();
+    }
+
+    // Add or update slots in newSlots
     for (final slot in newSlots) {
-      await slotsRef.doc(slot.id).update({
-      'dayOfWeek': slot.dayOfWeek,
-      'startTime': slot.startTime,
-      'endTime': slot.endTime,
-      'room': slot.room,
-      'origin': slot.origin,
-      'isActive': slot.isActive,
-      'isCustom': slot.isCustom,
-      });
+      await slotsRef.doc(slot.id).set({
+        'dayOfWeek': slot.dayOfWeek,
+        'startTime': slot.startTime,
+        'endTime': slot.endTime,
+        'room': slot.room,
+        'origin': slot.origin,
+        'isActive': slot.isActive,
+        'isCustom': slot.isCustom,
+      }, SetOptions(merge: true));
     }
   }
 }
