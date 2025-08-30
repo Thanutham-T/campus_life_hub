@@ -10,6 +10,7 @@ import '../datasources/remotes/schedule_remote_firestore.dart';
 // import '../models/schedule_template_model.dart';
 // import '../models/schedule_slots_model.dart';
 import '../models/schedule_log_model.dart';
+import '../models/schedule_slots_model.dart';
 
 
 class ScheduleRepositoryImpl implements ScheduleRepository {
@@ -167,5 +168,17 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       endTime: model.endTime,
       dayOfWeek: model.dayOfWeek,
     )).toList();
+  }
+
+  @override
+  Future<void> updateScheduleTemplate(String templateId, List<ScheduleSlotEntity> newSlots) async {
+    final slotModels = newSlots.map((entity) => ScheduleSlotModel(
+      id: entity.id,
+      room: entity.room,
+      startTime: entity.startTime,
+      endTime: entity.endTime,
+      dayOfWeek: entity.dayOfWeek,
+    )).toList();
+    await datasource.updateScheduleTemplate(templateId, slotModels);
   }
 }

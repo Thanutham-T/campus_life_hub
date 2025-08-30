@@ -9,4 +9,5 @@ abstract class ScheduleRepository {
   Future<void> updateClassInfo(String templateId, String slotId, String logId, String newRoom, String newNote);
   Future<List<ScheduleTemplateEntity>> getAllScheduleTemplates(String userId);
   Future<List<ScheduleSlotEntity>> getSlotsOfTemplate(String templateId);
+  Future<void> updateScheduleTemplate(String templateId, List<ScheduleSlotEntity> newSlots);
 }

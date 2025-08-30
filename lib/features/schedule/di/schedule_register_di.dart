@@ -12,6 +12,7 @@ import '../domain/usecases/check_in_class_usecase.dart';
 import '../domain/usecases/update_class_usecase.dart';
 import '../domain/usecases/get_all_schedule_templates_usecase.dart';
 import '../domain/usecases/get_all_slots_of_template_usecase.dart';
+import '../domain/usecases/update_schedule_template.dart';
 
 import '../presentation/bloc/schedule_bloc.dart';
 
@@ -31,6 +32,7 @@ Future<void> registerScheduleDI(GetIt sl) async {
   sl.registerLazySingletonAsync<UpdateClassUseCase>(() async => UpdateClassUseCase(await sl.getAsync<ScheduleRepository>()));
   sl.registerLazySingletonAsync<GetAllScheduleTemplateUseCase>(() async => GetAllScheduleTemplateUseCase(await sl.getAsync<ScheduleRepository>()));
   sl.registerLazySingletonAsync<GetAllSlotsOfTemplateUseCase>(() async => GetAllSlotsOfTemplateUseCase(await sl.getAsync<ScheduleRepository>()));
+  sl.registerLazySingletonAsync<UpdateScheduleTemplateUseCase>(() async => UpdateScheduleTemplateUseCase(await sl.getAsync<ScheduleRepository>()));
 
   // Bloc
   sl.registerFactoryAsync<ScheduleBloc>(() async => ScheduleBloc(
@@ -40,5 +42,6 @@ Future<void> registerScheduleDI(GetIt sl) async {
         updateClass: await sl.getAsync<UpdateClassUseCase>(),
         getAllScheduleTemplates: await sl.getAsync<GetAllScheduleTemplateUseCase>(),
         getAllSlotsOfTemplate: await sl.getAsync<GetAllSlotsOfTemplateUseCase>(),
+        updateScheduleTemplate: await sl.getAsync<UpdateScheduleTemplateUseCase>(),
       ));
 }

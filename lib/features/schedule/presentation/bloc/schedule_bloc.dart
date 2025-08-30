@@ -1,3 +1,4 @@
+import 'package:campus_life_hub/core/logging/logging.dart';
 import 'package:campus_life_hub/features/schedule/domain/entities/schedule_timeline_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,6 +13,7 @@ import 'package:campus_life_hub/features/schedule/domain/usecases/check_in_class
 import 'package:campus_life_hub/features/schedule/domain/usecases/update_class_usecase.dart';
 import 'package:campus_life_hub/features/schedule/domain/usecases/get_all_schedule_templates_usecase.dart';
 import 'package:campus_life_hub/features/schedule/domain/usecases/get_all_slots_of_template_usecase.dart';
+import 'package:campus_life_hub/features/schedule/domain/usecases/update_schedule_template.dart';
 
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
@@ -21,6 +23,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final UpdateClassUseCase updateClass;
   final GetAllScheduleTemplateUseCase getAllScheduleTemplates;
   final GetAllSlotsOfTemplateUseCase getAllSlotsOfTemplate;
+  final UpdateScheduleTemplateUseCase updateScheduleTemplate;
 
   ScheduleBloc({
     required this.getTodaySchedule,
@@ -29,6 +32,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     required this.updateClass,
     required this.getAllScheduleTemplates,
     required this.getAllSlotsOfTemplate,
+    required this.updateScheduleTemplate,
   }) : super(ScheduleInitial()) {
     on<LoadTodaySchedule>(_onLoadTodaySchedule);
     on<LoadDaySchedule>(_onLoadDaySchedule);
@@ -36,6 +40,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<UpdateClass>(_onUpdateClass);
     on<GetAllScheduleTemplates>(_onGetAllScheduleTemplates);
     on<GetAllSlotsOfTemplate>(_onGetAllSlotsOfTemplate);
+    on<UpdateScheduleTemplate>(_onUpdateScheduleTemplate);
   }
 
   Future<void> _onLoadTodaySchedule(LoadTodaySchedule event, Emitter<ScheduleState> emit) async {
@@ -139,6 +144,25 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         }
         return template;
       }).toList();
+      emit(ScheduleLoaded(templates, schedules, dateToUse));
+    } catch (e) {
+      emit(ScheduleError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateScheduleTemplate(UpdateScheduleTemplate event, Emitter<ScheduleState> emit) async {
+    DateTime? selectedDate;
+
+    final currentState = state;
+    if (currentState is ScheduleLoaded) {
+      selectedDate = currentState.selectedDate;
+    }
+    emit(ScheduleLoading());
+    try {
+      await updateScheduleTemplate.call(event.templateId, event.newSlots);
+      final dateToUse = selectedDate ?? DateTime.now();
+      final templates = await getAllScheduleTemplates(event.userId);
+      final schedules = await getDaySchedule(event.userId, dateToUse);
       emit(ScheduleLoaded(templates, schedules, dateToUse));
     } catch (e) {
       emit(ScheduleError(e.toString()));

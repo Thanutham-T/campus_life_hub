@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:campus_life_hub/features/schedule/domain/entities/schedule_slot_entity.dart';
+
 
 abstract class ScheduleEvent extends Equatable {
   const ScheduleEvent();
@@ -87,4 +89,19 @@ class GetAllSlotsOfTemplate extends ScheduleEvent {
 
   @override
   List<Object?> get props => [templateId];
+}
+
+class UpdateScheduleTemplate extends ScheduleEvent {
+  final String userId;
+  final String templateId;
+  final List<ScheduleSlotEntity> newSlots;
+
+  const UpdateScheduleTemplate({
+    required this.userId,
+    required this.templateId,
+    required this.newSlots,
+  });
+
+  @override
+  List<Object?> get props => [userId, templateId, newSlots];
 }

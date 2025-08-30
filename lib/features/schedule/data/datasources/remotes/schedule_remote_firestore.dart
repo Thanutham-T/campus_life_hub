@@ -24,6 +24,8 @@ abstract class ScheduleRemoteDataSource {
 
   Future<void> updateCheckinForLog(String templateId, String slotId, String logId);
   Future<void> updateClassForLog(String templateId, String slotId, String logId, String newRoom, String newNote);
+
+  Future<void> updateScheduleTemplate(String templateId, List<ScheduleSlotModel> newSlots);
 }
 
 class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
@@ -239,5 +241,21 @@ class ScheduleRemoteFirestoreImpl implements ScheduleRemoteDataSource {
           'room': newRoom,
           'note': newNote,
         });
+  }
+
+  @override
+  Future<void> updateScheduleTemplate(String templateId, List<ScheduleSlotModel> newSlots) async {
+    final slotsRef = _firestore.collection('schedules').doc(templateId).collection('slots');
+    for (final slot in newSlots) {
+      await slotsRef.doc(slot.id).update({
+      'dayOfWeek': slot.dayOfWeek,
+      'startTime': slot.startTime,
+      'endTime': slot.endTime,
+      'room': slot.room,
+      'origin': slot.origin,
+      'isActive': slot.isActive,
+      'isCustom': slot.isCustom,
+      });
+    }
   }
 }
